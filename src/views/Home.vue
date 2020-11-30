@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home py-6">
     <div class="columns fullHeight">
       <div class="column">
         <cmp-form :form="form1" title="Пул">
@@ -7,12 +7,17 @@
         <b-field label="prices:"
             grouped group-multiline>
           <div v-for="item in prices" :key="item.name" class="control">
-            <b-taglist  attached>
+            <b-taglist attached>
               <b-tag type="is-primary is-light" size="is-medium">{{item.name}}</b-tag>
               <b-tag type="is-primary" size="is-medium">{{item.value}}</b-tag>
             </b-taglist>
            </div>
-          <b-button type="is-primary" @click="priceModal = true">Edit</b-button>  
+          <b-button 
+              type="is-primary"
+              size="is-small"
+              icon-left="border-color"
+              @click="priceModal = true">
+          </b-button>
         </b-field>
       </div>
       <div class="column">
@@ -71,7 +76,8 @@
           </div>
           
           <div class="column is-half">
-            <b-button expanded type="is-primary" outlined>Ликвидация займа</b-button>
+            <b-button expanded type="is-primary" outlined
+            @click="liquidateModal = true">Ликвидация займа</b-button>
           </div>
 <!--           
           <div class="column is-half">
@@ -148,7 +154,6 @@
               <div class="column is-4">
                 <h2 class="is-size-6">Внести {{createDepositInfo.tokenInput}}<br> 
                 {{createDepositInfo.token}} от аккаунта №{{createDepositInfo.account+1}} в депозит</h2>
-                
                 <b-button expanded type="is-primary" outlined
                  @click="createDeposit(createDepositInfo), createDepositModal = false">Подтвердить</b-button>
               </div>
@@ -401,12 +406,12 @@
         </section>
       </div>
     </b-modal>
-    <b-modal v-model="liquidateModal" :width="640">
+    <b-modal v-model="liquidateModal" :width="740">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
           <h2 class="is-size-4">Ликвидация займа</h2>
             <div class="columns is-multiline">
-              <div class="column is-4">
+              <div class="column is-2">
                 <h2 class="is-size-6">account</h2>
                 <div v-for="(item, index) in accounts"
                     :key="index">
@@ -414,23 +419,63 @@
                       v-model="liquidateInfo.account"
                       name="account"
                       :native-value="index"
-                      @click.native="setLiquidateccountInfo(index)"
+                      @click.native="setMaxLiquidate(index, liquidateInfo.token)"
                       >
                       №{{index+1}}
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-8">
-                <h2 class="is-size-6">loan: 1200 ETH for 12 BTC</h2>
-                <h2 class="is-size-6">срок: 12 мес</h2>
-                <h2 class="is-size-6">к возврату: {{liquidateInfo.sumBorrowPlusEffects }} ETH</h2>
-                <h2 class="is-size-6">обеспечение: {{liquidateInfo.sumCollateral}} BTC</h2>
+              <div class="column is-2">
+                
+                <h2 class="is-size-6">token max({{liquidateInfo.maxLiquidate}})</h2>
+
+                <b-input type="text" class="is-flex-grow-2" v-model="liquidateInfo.value" ></b-input>
+                <div v-for="(item, index) in liquidateInfo.options"
+                    :key="index">
+                  <b-radio 
+                      v-model="token"
+                      name="token"
+                      :native-value="item"
+                      @click.native="setMaxLiquidate(liquidateInfo.account, item)"
+                      >
+                      {{item}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-2">
+                <h2 class="is-size-6">account</h2>
+                <div v-for="(item, index) in accounts"
+                    :key="index">
+                  <b-radio 
+                      v-model="liquidateInfo.account2"
+                      name="account2"
+                      :native-value="index"
+                      >
+                      №{{index+1}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-2">
+                <h2 class="is-size-6">token</h2>
+                <div v-for="(item, index) in liquidateInfo.options"
+                    :key="index">
+                  <b-radio 
+                      v-model="token2"
+                      name="token2"
+                      :native-value="item"
+                      >
+                      {{item}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-4">
                 <h3 class="is-size-8">
-                  Вернуть займ аккаунта №{{liquidateInfo.account+1}} в размере 1300 ЕTH и вернуть 13 BTC
-                  {{liquidateInfo.payValue}} {{liquidateInfo.token}} <br>
+                  Ликвидировать займ аккаунта №{{liquidateInfo.account+1}} 
+                  и перевести 1200 {{liquidateInfo.token}} в пул
+                  
                 </h3>
                 <b-button expanded type="is-primary" outlined
-                 @click="repay(liquidateInfo), liquidateModal = false">Подтвердить</b-button>
+                 @click="liquidate(liquidateInfo), liquidateModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -527,14 +572,13 @@ export default {
       liquidateModal: false,
       liquidateInfo: {
         account: 0,
+        account2: 0,
         value: 0,
-        getValue: 0,
+        maxLiquidate: 0,
         options: config.tokens,
         borrows: 0,
         token: '',
-        depositsToken: '',
-        sumCollateral: 0,
-        sumBorrowPlusEffects: 0,
+        token2: '',
       },
       form1: [
         {
@@ -868,21 +912,23 @@ export default {
       // this.repayInfo.sumCollateral = account.sumCollateral.toString();
       // this.repayInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
     },
+    setMaxLiquidate(accountId, token){
+      this.liquidateInfo.maxLiquidate = pool.getLiqudationMax(accountId, token);
+    },
     liquidate(liquidateInfo){
-      const liqAllowedMax = pool.getLiqudationMax(liquidateInfo.accountI, liquidateInfo.token);
-      pool.liquidate(liquidateInfo.accountI, liquidateInfo.token, liqAllowedMax, liquidateInfo.token2, liquidateInfo.accountId1);
+      pool.liquidate(liquidateInfo.account, liquidateInfo.token, liquidateInfo.value, liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
     },
-    setLiquidateccountInfo(accountIndex){
-      let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
-      console.log(account.borrows);
-      console.log(account.borrows.value.toString());
-      // account
-      this.liquidateInfo.depositsToken = account.deposits
-      this.liquidateInfo.deposits = account.deposits.toString();
-      this.liquidateInfo.sumCollateral = account.sumCollateral.toString();
-      this.liquidateInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
-    },
+    // setLiquidateccountInfo(accountIndex){
+    //   let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
+    //   console.log(account.borrows);
+    //   console.log(account.borrows.value.toString());
+    //   // account
+    //   this.liquidateInfo.depositsToken = account.deposits
+    //   this.liquidateInfo.deposits = account.deposits.toString();
+    //   this.liquidateInfo.sumCollateral = account.sumCollateral.toString();
+    //   this.liquidateInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
+    // },
     setMaxToMint(accountId, token){
       this.mintInfo.maxMint = pool.getMaxMint(accountId, token);
     },

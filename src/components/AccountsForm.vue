@@ -5,17 +5,26 @@
 
     </div>
     <div v-for="(item, index) in accountsChecked" 
-        class="is-flex is-flex-wrap-wrap"
+        class="mb-4"
         :key="index"
         grouped group-multiline>
-      <span>№{{index+1}} Balance:</span>
-      <div v-for="item2 in item" :key="item2.name" class="control">
-        <b-taglist  attached>
-          <b-tag type="is-primary is-light" size="is-medium">{{item2.name}}</b-tag>
-          <b-tag type="is-primary" size="is-medium">{{item2.value}}</b-tag>
-        </b-taglist>
+      <div>
+        <span>№{{index+1}} Balance:</span>
+        <b-button 
+            class="ml-3"
+            size="is-small" 
+            icon-left="border-color"
+            @click="openEditModal(index)">
+        </b-button>
+      </div>
+      <div class="is-flex is-flex-wrap-wrap">
+        <div v-for="item2 in item" :key="item2.name" class="control mr-4">
+          <b-taglist attached>
+            <b-tag type="is-primary is-light" size="is-medium">{{item2.name}}</b-tag>
+            <b-tag type="is-primary" size="is-medium">{{item2.value}}</b-tag>
+          </b-taglist>
         </div>
-      <b-button type="is-primary" @click="openEditModal(index)">Edit</b-button>  
+      </div>
     </div>
     <b-button type="is-primary" @click="openEditModal(-1)">add account</b-button>  
 

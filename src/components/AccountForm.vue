@@ -1,9 +1,10 @@
 <template>
   <div class="">
-    <h2 class="is-size-4"> account {{i + 1}}</h2>
+    <h2 v-if="i < 0" class="is-size-4">new account</h2>
+    <h2 v-else class="is-size-4"> account {{i + 1}}</h2>
     <div v-for="item in currentAccount" 
         :key="item.name"
-        class="is-flex is-align-items-center"
+        class="is-flex is-align-items-center mb-4"
         >
         <b-checkbox v-model="item.checked"
             class="is-flex-grow-0">
@@ -90,6 +91,7 @@ export default {
     ...mapState('accounts', {'accounts': 'items'}),
   },
   created(){
+    console.log('created', this.i);
     if (this.i < 0){
       this.currentAccount = this.defaultAccount.map(item => item);
     } else {

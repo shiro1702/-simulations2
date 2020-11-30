@@ -49,8 +49,9 @@ export default {
 		},
 		// редактивроание контакта
 		editItem(state, data){
-			let i = data.i;
-			state.items.splice(i, 1, data)
+            let i = data.i;
+            console.log(i);
+			state.items.splice(i, 1, data.data)
 		},
 		// удаление контакта
 		deleteItem(state, i){
@@ -62,8 +63,8 @@ export default {
 		saveItem({commit}, item){
             console.log(item);
             if (item.i != undefined ){
-                console.log('editItem');
-                commit('editItem', item.data);
+                console.log('editItem', item.i );
+                commit('editItem', item);
             } else {
                 console.log('createItem');
                 commit('createItem', item.data);
