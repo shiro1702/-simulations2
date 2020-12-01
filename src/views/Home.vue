@@ -35,11 +35,11 @@
 
         <h2 class="is-size-4">Операции</h2>
         <div class="columns is-multiline">
-<!-- 
-          <div class="column is-half">
+
+          <!-- <div class="column is-half">
             <b-button expanded type="is-primary">Запуск симуляции</b-button>
-          </div>
-           -->
+          </div> -->
+          
           <div class="column is-half">
             <b-button expanded type="is-primary" outlined
               @click="nextTick()">Сделать шаг</b-button>
@@ -84,11 +84,6 @@
             <b-button expanded type="is-danger" outlined>Сброс</b-button>
           </div> -->
         </div>
-
-        <b-field label="кол-во операций:" horizontal>
-            <b-input value="100"></b-input>
-        </b-field>
-        
       </div>
     </div>
     <div class="columns fullHeight">
@@ -97,13 +92,14 @@
          
           <b-table :data="this.table" :columns="columns"></b-table>
       </div>
-      <!-- <div class="column">
-        <h2 class="is-size-4">История</h2>
-        
-        <span v-for="(item, index) in history" :key="index">
-          {{index}}) {{item}}
-        </span>
-      </div> -->
+      <div class="column">
+        <h2 class="is-size-4 ">История</h2>
+        <div class="history" ref="history">
+          <div v-for="(item, index) in history" :key="index">
+            {{index}}) {{item}}
+          </div>
+        </div>
+      </div>
     </div>
     <!-- <b-button type="is-primary" @click="tokenModal = true">Primary</b-button> -->  
     <b-modal v-model="tokenModal" :width="640">
@@ -808,7 +804,15 @@ export default {
     config(val){
       pool.createPool(val);
       oracle.init(val);
-    }
+    },
+    history(){
+      console.log(this.$refs.history);
+      console.log(this.$refs.history.scrollHeight);
+      this.$refs.history.scrollTo({
+        top: this.$refs.history.scrollHeight,
+        behavior: "smooth"
+      });
+    },
   },
   methods: {
     Create(){
@@ -831,10 +835,13 @@ export default {
     nextTick(){
       pool.tick(1);
       this.updateResults();
+      this.history.push('pool tick');
     },
     createDeposit(createDepositInfo){
       pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: createDepositInfo.value });
       this.updateResults();
+
+      this.history.push(`создан депозит для акаунта №${createDepositInfo.account} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
     },
     setReturnOptionToDeposit(val){
 
@@ -856,6 +863,8 @@ export default {
       // console.log(pool.redeem(accountId1, "BTC", 100));
       pool.redeem(returnDepositInfo.account, { name: returnDepositInfo.token, value: returnDepositInfo.value });
       this.updateResults();
+
+      this.history.push(`возврат депозита для акаунта №${returnDepositInfo.account} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
     },
     updateResults(){
       console.log( pool.getInfo(this.pricesFormat) );
@@ -886,11 +895,13 @@ export default {
     borrow(borrowInfo){
       pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.getValue });
       this.updateResults();
-
+      this.history.push(`акаунт №${borrowInfo.account} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
     },
     repay(repayInfo){
       pool.repay(repayInfo.account, repayInfo.token, repayInfo.value);
       this.updateResults();
+
+      this.history.push(`акаунт №${repayInfo.account} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
     },
     setRepayAccountInfo(accountIndex){
       let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
@@ -918,6 +929,8 @@ export default {
     liquidate(liquidateInfo){
       pool.liquidate(liquidateInfo.account, liquidateInfo.token, liquidateInfo.value, liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
+
+      this.history.push(`акаунт №${liquidateInfo.account2} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account}  `);
     },
     // setLiquidateccountInfo(accountIndex){
     //   let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
@@ -934,12 +947,15 @@ export default {
     },
     mint(mintInfo){
       pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: mintInfo.value });
+
+      this.history.push(`акаунт №${mintInfo.account} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
     },
     trade(tradeInfo){
       console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       const trade1 = pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       console.log(trade1);
       this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value}`)
+      this.history.push(`акаунт №${tradeInfo.account} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value})`);
     },
 
   },
@@ -960,4 +976,8 @@ export default {
     height: 50%
   .modal-content-height
     min-height: 50vh
+  .history
+    overflow: scroll
+    max-height: 500px
+    text-align: left
 </style>
