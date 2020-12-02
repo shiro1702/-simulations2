@@ -56,7 +56,7 @@ class NeuronPool {
     if (!deposit || deposit.share.lessThan(share))
       return {
         error: { message: "deposit not found or not enough share" },
-        currentShare: deposit.share,
+        currentShare: deposit && deposit.share,
         specifiedShare: share,
       };
     const output = this._liquidateShareAmount(share, name);
@@ -526,7 +526,7 @@ class NeuronPool {
   };
 
   getMaxBorrow = (accountId, name) => {
-    const [sumLiqudity] = this._checkBorrow(accountId, name, 0, 0);
+    const [sumLiquidity] = this._checkBorrow(accountId, name, 0, 0);
     const oraclePrice = this.reserves.get(name).price;
     return new D(sumLiquidity).div(oraclePrice);
   };
