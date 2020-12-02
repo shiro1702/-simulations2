@@ -23,15 +23,15 @@
 
     <b-button v-if="i < 0" 
         type="is-primary" 
-        @click="saveItem({data: currentAccount}), $parent.close()">
+        @click="addBalanceToAccount({data: currentAccountFormat, pricesFormat: pricesFormat}), $parent.close()">
       Create account
     </b-button>  
     <template v-else >
       <b-button 
           type="is-primary" 
-          @click="saveItem({data: currentAccount, i: i}), $parent.close()">
-        Save account
-      </b-button>  
+          @click="addBalanceToAccount({data: currentAccountFormat, pricesFormat: pricesFormat, i: i}), $parent.close()">
+        Add coins
+      </b-button> 
       <!-- <b-button 
           type="is-danger"
           outlined
@@ -45,10 +45,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 export default {
-  props: ['title', 'i'],
-  methods: {
-    ...mapActions('accounts', ['saveItem', 'deleteItem'])
-  },
+  props: ['title', 'i', 'pricesFormat'],
   data() {
     return {
       currentAccount: [
@@ -88,15 +85,44 @@ export default {
     }
   },
   computed: {
-    ...mapState('accounts', {'accounts': 'items'}),
+    ...mapState('accounts', {'accounts': 'items', 'poolAccounts':'poolAccounts' }),
+    currentAccountFormat(){
+      let balance = {};
+      this.currentAccount.forEach(item2 => {
+        if (item2.checked) {
+          balance[item2.name] = item2.value
+        }
+      })
+      return balance
+    },
+  },
+  methods: {
+    ...mapActions('accounts', ['saveItem', 'deleteItem', 'addBalanceToAccount']),
+    unformat(data){
+      console.log('data', data);
+      let newData = []
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          newData.push({
+            name: key,
+            value: data[key].toString(),
+            checked: true,
+          })
+        }
+      }
+      return newData
+    }
   },
   created(){
     console.log('created', this.i);
     if (this.i < 0){
       this.currentAccount = this.defaultAccount.map(item => item);
     } else {
-      this.currentAccount = this.accounts[this.i].map(item => item);
+      // console.log(this.poolAccounts[this.i].balance);
+      this.currentAccount = this.unformat(this.poolAccounts[this.i].balance);
     }
+    console.log('this.currentAccount', this.currentAccount);
+
   },
 
 }

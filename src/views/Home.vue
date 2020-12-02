@@ -21,9 +21,9 @@
         </b-field>
       </div>
       <div class="column">
-        <cmp-accounts-form 
-            :form="accounts" 
+        <cmp-accounts-form
             :tokenOptions="[...config.tokens, config.stable]"
+            :pricesFormat="pricesFormat"
             title="Аккаунты">
         </cmp-accounts-form>
       </div>
@@ -124,28 +124,30 @@
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="createDepositInfo.account"
                       name="account"
-                      :native-value="index">
-                      №{{index+1}}
+                      :native-value="parseInt(index)">
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6">token</h2>
                 <b-input type="number" class="is-flex-grow-2" v-model="createDepositInfo.value" ></b-input>
-                <div v-for="(item, index) in accountsChecked[createDepositInfo.account]"
-                    :key="index">
-                  <b-radio 
-                      v-model="createDepositInfo.token"
-                      name="token"
-                      :native-value="item.name">
-                      {{item.name}}
-                  </b-radio>
-                </div>
+                <template v-if="poolAccounts[createDepositInfo.account]">
+                  <div v-for="(item, index) in poolAccounts[createDepositInfo.account].balance"
+                      :key="index">
+                    <b-radio 
+                        v-model="createDepositInfo.token"
+                        name="token"
+                        :native-value="index">
+                        {{index}} {{item}}
+                    </b-radio>
+                  </div>
+                </template>
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6">Внести {{createDepositInfo.tokenInput}}<br> 
@@ -164,15 +166,15 @@
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="returnDeposit.account"
                       name="account"
-                      :native-value="index"
+                      :native-value="parseInt(index)"
                       @click.native="setReturnOptionToDeposit(index)"
                       >
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
@@ -207,15 +209,15 @@
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="borrowInfo.account"
                       name="account"
-                      :native-value="index"
+                      :native-value="parseInt(index)"
                       @click.native="setReturnOptionToBorrow(index, borrowInfo.token)"
                       >
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
@@ -254,15 +256,15 @@
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="mintInfo.account"
                       name="account"
-                      :native-value="index"
+                      :native-value="parseInt(index)"
                       @click.native="setMaxToMint(index, mintInfo.token)"
                       >
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
@@ -299,15 +301,15 @@
             <div class="columns is-multiline">
               <div class="column is-3">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="tradeInfo.account"
                       name="account"
-                      :native-value="index"
+                      :native-value="parseInt(index)"
                       >
                       <!-- @click.native="setMaxToMint(index, tradeInfo.token)" -->
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
@@ -320,15 +322,17 @@
                 <div class="columns">
 
                   <div class="column is-6">
-                    <div v-for="(item, index) in tradeInfo.options"
-                        :key="index">
-                      <b-radio 
-                          v-model="tradeInfo.token"
-                          name="token1"
-                          :native-value="item">
-                          {{item}}
-                      </b-radio>
-                    </div>
+                    <template v-if="poolAccounts[tradeInfo.account]">
+                      <div v-for="(item, index) in poolAccounts[tradeInfo.account].balance"
+                          :key="index">
+                        <b-radio 
+                            v-model="tradeInfo.token"
+                            name="token1"
+                            :native-value="index">
+                            {{index}} {{item}}
+                        </b-radio>
+                      </div>
+                    </template>
                   </div>
                   <div class="column is-6">
                     <div v-for="(item, index) in tradeInfo.options"
@@ -360,15 +364,15 @@
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="repayInfo.account"
                       name="account"
-                      :native-value="index"
-                      @click.native="setRepayAccountInfo(index)"
+                      :native-value="parseInt(index)"
+                      @click.native="setRepayAccountInfo(parseInt(index))"
                       >
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
@@ -409,15 +413,15 @@
             <div class="columns is-multiline">
               <div class="column is-2">
                 <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="liquidateInfo.account"
                       name="account"
-                      :native-value="index"
-                      @click.native="setMaxLiquidate(index, liquidateInfo.token)"
+                      :native-value="parseInt(index)"
+                      @click.native="setMaxLiquidate(parseInt(index), liquidateInfo.token)"
                       >
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
@@ -426,43 +430,48 @@
                 <h2 class="is-size-6">token max({{liquidateInfo.maxLiquidate}})</h2>
 
                 <b-input type="text" class="is-flex-grow-2" v-model="liquidateInfo.value" ></b-input>
-                <div v-for="(item, index) in liquidateInfo.options"
-                    :key="index">
-                  <b-radio 
-                      v-model="liquidateInfo.token"
-                      name="token"
-                      :native-value="item"
-                      @click.native="setMaxLiquidate(liquidateInfo.account, item)"
-                      >
-                      {{item}}
-                  </b-radio>
-                </div>
+                <template v-if="poolAccounts[createDepositInfo.account]">
+                  <div v-for="(item, index) in poolAccounts[liquidateInfo.account].balance"
+                      :key="index">
+                    <b-radio 
+                        v-model="liquidateInfo.token"
+                        name="token"
+                        :native-value="index"
+                        @click.native="setMaxLiquidate(liquidateInfo.account, item)"
+                        >
+                        {{index}}
+                    </b-radio>
+                  </div>
+                </template>
               </div>
               <div class="column is-2">
-                <h2 class="is-size-6">account</h2>
-                <div v-for="(item, index) in accounts"
+                <h2 class="is-size-6">account2</h2>
+                <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
                       v-model="liquidateInfo.account2"
                       name="account2"
-                      :native-value="index"
+                      :native-value="parseInt(index)"
                       >
-                      №{{index+1}}
+                      №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
               <div class="column is-2">
-                <h2 class="is-size-6">token</h2>
-                <div v-for="(item, index) in liquidateInfo.options"
-                    :key="index">
-                  <b-radio 
-                      v-model="liquidateInfo.token2"
-                      name="token2"
-                      :native-value="item"
-                      >
-                      {{item}}
-                  </b-radio>
-                </div>
+                <h2 class="is-size-6">token2</h2>
+
+                <template v-if="poolAccounts[liquidateInfo.account2]">
+                  <div v-for="(item, index) in poolAccounts[liquidateInfo.account2].balance"
+                      :key="index">
+                    <b-radio 
+                        v-model="liquidateInfo.token2"
+                        name="token2"
+                        :native-value="index"
+                        >
+                        {{index}} {{item}}
+                    </b-radio>
+                  </div>
+                </template>
               </div>
               <div class="column is-4">
                 <h3 class="is-size-8">
@@ -481,14 +490,8 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import config from '@/assets/NeuronES6/config.js'
-import NeuronPool from '@/assets/NeuronES6/pool.js'
-
-import Oracle from '@/assets/NeuronES6/oracle.js'
-
-const pool = new NeuronPool();
-const oracle = new Oracle();
 
 
 // @ is an alias to /src
@@ -777,7 +780,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('accounts', {'accounts': 'items'}),
+    ...mapState('accounts', {'accounts': 'items', 'poolAccounts': 'poolAccounts'}),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
     pricesFormat(){
       let price = {}
@@ -796,12 +799,12 @@ export default {
     }
   },
   watch: {
-    accountsChecked(){
-      this.AccountUpdate();
-    },
+    // accountsChecked(){
+    //   this.AccountUpdate();
+    // },
     config(val){
-      pool.createPool(val);
-      oracle.init(val);
+      window.pool.createPool(val);
+      window.oracle.init(val);
     },
     pricesFormat(){
       this.updateResults();
@@ -839,60 +842,67 @@ export default {
     },
   },
   methods: {
+    ...mapMutations('accounts', {accountEdit: 'editItem'}),
+    ...mapActions('accounts', ['updateAccounts']),
     Create(){
-      oracle.init(config);
-      pool.createPool(config);
-      this.AccountUpdate();
+      window.oracle.init(config);
+      window.pool.createPool(config);
+      // this.AccountUpdate();
     },
-    AccountUpdate(){
-      console.log(this.accountsChecked);
-      this.accountsChecked.forEach((item, index) => {
-        let balance = {};
-        item.forEach(item2 => {
-          balance[item2.name] = item2.value
-        }) 
-        pool.accounts.issueBalance(index, balance)
-        console.log(pool.accounts.get(index));
-      })
-      this.updateResults();
-    },
-    nextTick(){
-      pool.tick(1);
-      this.updateResults();
-      this.history.push('pool tick');
-    },
-    createDeposit(createDepositInfo){
-      pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: createDepositInfo.value });
-      this.updateResults();
+    // AccountUpdate(){
+    //   console.log(this.accountsChecked);
+    //   this.accountsChecked.forEach((item, index) => {
+    //     let balance = {};
+    //     item.forEach(item2 => {
+    //       balance[item2.name] = item2.value
+    //     })
+    //     window.pool.accounts.issueBalance(index, balance)
+    //     // console.log(window.pool.accounts.get(index));
+    //   })
+    //   // this.updateResults();
+    // },
 
-      this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
-    },
-    setReturnOptionToDeposit(val){
-      // console.log(val);
-      let balance= pool.accounts.get(val).balance
-      // console.log(balance);
-      let options = []
-      for (let key in balance) {
-        options.push({
-          name: key,
-          value: balance[key].toString()
-        })
-      }
-      this.$set( this.returnDepositInfo, 'options', options )
-      // console.log(this.returnDepositInfo.options);
-    },
-    returnDeposit(returnDepositInfo){
-      // console.log(pool.redeem(accountId1, "BTC", 100));
-      pool.redeem(returnDepositInfo.account, { name: returnDepositInfo.token, value: returnDepositInfo.value });
-      this.updateResults();
-
-      this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
-    },
     updateResults(){
-      // console.log( pool.getInfo(this.pricesFormat) );
-      // console.log( pool.getInfo(this.pricesFormat).reserves );
+      // console.log( window.pool.getInfo(this.pricesFormat) );
+      // console.log( window.pool.getInfo(this.pricesFormat).reserves );
+      let getInfo = window.pool.getInfo(this.pricesFormat)
       this.table = [];
-      let reserves = pool.getInfo(this.pricesFormat).reserves
+      let reserves = getInfo.reserves;
+      this.updateAccounts(this.pricesFormat)
+      // let accounts  = getInfo.accounts;
+      // console.log('accounts', accounts);
+
+      // for (const index in accounts) {
+      //   let item = accounts[index];
+        
+      //   let element = {};
+      //   element.i = index;
+      //   element.data = this.accounts[index].map((item)=>item);
+      //   console.log('data', element.data);
+      //   for (const key in item.balance) {
+          
+      //     if (Object.prototype.hasOwnProperty.call(item.balance[key], key)) {
+      //       const index2 = this.accounts[index].findIndex(item2=>{
+      //           return item2.name == key
+      //       })
+      //       element.data[index2] = item.balance[key].toString();
+      //       console.log('index2', index2);
+      //       console.log('key', key);
+      //       console.log('balance', element.data[index2]);
+      //       // element.data.checked
+      //       // element.data.checked = true;
+      //       // element.data[key] = item.balance[key].toString();
+      //     }
+      //   }
+      //   this.accountEdit(element);
+      //   setTimeout(() => {
+          
+      //   console.log('this.accountsChecked', this.accountsChecked);
+
+      //   }, 10);
+
+      // }
+      
       for (const key in reserves) {
         if (Object.prototype.hasOwnProperty.call(reserves, key)) {
 
@@ -908,24 +918,56 @@ export default {
       }
       console.log( this.table );
     },
+    nextTick(){
+      window.pool.tick(1);
+      this.updateResults();
+      this.history.push('pool tick');
+    },
+    createDeposit(createDepositInfo){
+      window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: createDepositInfo.value });
+      this.updateResults();
+
+      this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
+    },
+    setReturnOptionToDeposit(val){
+      // console.log(val);
+      let balance= window.pool.accounts.get(val).balance
+      // console.log(balance);
+      let options = []
+      for (let key in balance) {
+        options.push({
+          name: key,
+          value: balance[key].toString()
+        })
+      }
+      this.$set( this.returnDepositInfo, 'options', options )
+      // console.log(this.returnDepositInfo.options);
+    },
+    returnDeposit(returnDepositInfo){
+      // console.log(window.pool.redeem(accountId1, "BTC", 100));
+      window.pool.redeem(returnDepositInfo.account, { name: returnDepositInfo.token, value: returnDepositInfo.value });
+      this.updateResults();
+
+      this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
+    },
     setReturnOptionToBorrow(val, val2){
       // console.log(val);
       // maxBorrow
-      console.log('getMaxBorrow', pool.getMaxBorrow(val, val2));
-      this.borrowInfo.maxBorrow = pool.getMaxBorrow(val, val2);
+      console.log('getMaxBorrow', window.pool.getMaxBorrow(val, val2));
+      this.borrowInfo.maxBorrow = window.pool.getMaxBorrow(val, val2);
     },
     borrow(borrowInfo){
-      pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.value });
+      window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.value });
       this.updateResults();
       this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
     },
     repay(repayInfo){
-      pool.repay(repayInfo.account, repayInfo.token, repayInfo.value);
+      window.pool.repay(repayInfo.account, repayInfo.token, repayInfo.value);
       this.updateResults();
       this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
     },
     setRepayAccountInfo(accountIndex){
-      let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
+      let account = window.pool.getInfo(this.pricesFormat).accounts[accountIndex];
       console.log(account.borrows);
       // console.log(account.borrows.value.toString());
       // account
@@ -945,15 +987,15 @@ export default {
       // this.repayInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
     },
     setMaxLiquidate(accountId, token){
-      this.liquidateInfo.maxLiquidate = pool.getLiqudationMax(accountId, token);
+      this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
     },
     liquidate(liquidateInfo){
-      pool.liquidate(liquidateInfo.account, liquidateInfo.token, liquidateInfo.value, liquidateInfo.token2, liquidateInfo.account2);
+      window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, liquidateInfo.value, liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
-      this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}  `);
+      this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}`);
     },
     // setLiquidateccountInfo(accountIndex){
-    //   let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
+    //   let account = window.pool.getInfo(this.pricesFormat).accounts[accountIndex];
     //   console.log(account.borrows);
     //   console.log(account.borrows.value.toString());
     //   // account
@@ -963,15 +1005,17 @@ export default {
     //   this.liquidateInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
     // },
     setMaxToMint(accountId, token){
-      this.mintInfo.maxMint = pool.getMaxMint(accountId, token);
+      this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token);
     },
     mint(mintInfo){
-      pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: mintInfo.value });
+      window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: mintInfo.value });
       this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
+      this.updateResults();
     },
     trade(tradeInfo){
       console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
-      const trade1 = pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
+      const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
+      this.updateResults();
       console.log(trade1);
       this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value}`)
       this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value})`);

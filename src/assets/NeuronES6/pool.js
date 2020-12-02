@@ -245,7 +245,7 @@ class NeuronPool {
     this._updateIndexesAll();
     const liqAllowed = this._liquidateBorrowAllowed(borrower, name);
 
-    if (!liqAllowed || liqAllowed.eq(0)) {
+    if (liqAllowed.lessThan(0) || liqAllowed.equals(0)) {
       console.log("liquidation not allowed");
       return;
     }
@@ -466,7 +466,7 @@ class NeuronPool {
     this._updateIndexesAll();
     const liqAllowed = this._liquidateBorrowAllowed(borrower, name);
 
-    if (!liqAllowed) {
+    if (liqAllowed.lessThan(0) || liqAllowed.equals(0)) {
       console.log("liquidation not allowed");
       return;
     }
@@ -528,7 +528,7 @@ class NeuronPool {
   getMaxBorrow = (accountId, name) => {
     const [sumLiqudity] = this._checkBorrow(accountId, name, 0, 0);
     const oraclePrice = this.reserves.get(name).price;
-    return sumLiqudity.div(oraclePrice);
+    return new D(sumLiquidity).div(oraclePrice);
   };
 
   _liquidateCalculateSeizeTokens = (name, collateralName, repayAmount) => {

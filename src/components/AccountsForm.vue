@@ -4,24 +4,24 @@
     <div class="accountsFrom__scroll">
 
     </div>
-    <div v-for="(item, index) in accountsChecked" 
+    <div v-for="(item, index) in poolAccounts" 
         class="mb-4"
         :key="index"
         grouped group-multiline>
       <div>
-        <span>№{{index+1}} Balance:</span>
+        <span>№{{1 + parseInt(index)}} Balance:</span>
         <b-button 
             class="ml-3"
             size="is-small" 
-            icon-left="border-color"
+            icon-left="plus"
             @click="openEditModal(index)">
         </b-button>
       </div>
       <div class="is-flex is-flex-wrap-wrap">
-        <div v-for="item2 in item" :key="item2.name" class="control mr-4">
+        <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-4">
           <b-taglist attached>
-            <b-tag type="is-primary is-light" size="is-medium">{{item2.name}}</b-tag>
-            <b-tag type="is-primary" size="is-medium">{{item2.value}}</b-tag>
+            <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
+            <b-tag type="is-primary" size="is-medium">{{item2}}</b-tag>
           </b-taglist>
         </div>
       </div>
@@ -32,7 +32,8 @@
       >
       <div v-if="accountModal" class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <cmp-account-form :title="'test'" :i="currentAccountindex">
+          <cmp-account-form :title="'test'" :i="currentAccountindex" 
+            :pricesFormat="pricesFormat">
           </cmp-account-form>
         </section>
       </div>
@@ -41,7 +42,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 
 import AccountForm from '@/components/AccountForm.vue'
 
@@ -52,6 +53,9 @@ export default {
     }, 
     tokenOptions: {
       default: [],
+    },
+    pricesFormat: {
+      default: {},
     }
   },
   components: {
@@ -68,7 +72,7 @@ export default {
     }
   },
   computed: {
-    // ...mapState('accounts', {'accounts': 'items'}),
+    ...mapState('accounts', ['poolAccounts']),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
   },
   methods: {
