@@ -5,9 +5,25 @@
 // const { Reserves } = require("./reserves");
 
 import D from 'decimal.js'
-import {lambertW} from './utils.js'
+// import {lambertW} from './utils.js'
 import Accounts from './accounts.js'
 import Reserves from './reserves.js'
+
+function lambertW(input, iters = 8) {
+  const xinp = input;
+  let x = xinp;
+  if (x.gt(D.exp(1)))
+    x = x.ln();
+  for (let i = 0; i < iters; ++i) {
+    const xexp = x.exp();
+    const num = x.mul(xexp).minus(xinp);
+    const dena = xexp.mul(x.add(1));
+    const denb = x.add(2).mul(x.mul(xexp).sub(xinp)).div(x.mul(2).add(2));
+    const den = dena.sub(denb);
+    x = x.sub(num.div(den));
+  }
+  return x;
+}
 
 const DAYS_PER_YEAR = 365;
 
