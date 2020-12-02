@@ -75,6 +75,19 @@ class NeuronPool {
         currentShare: deposit && deposit.share,
         specifiedShare: share,
       };
+
+      if (force === false) {
+        const [_, shortfall] = this._checkBorrow(accountId, name, 0, share);
+        
+        if (shortfall > 0) {
+          return {
+            error: {
+              message: "not enough collateral",
+            },
+          };
+        }
+      }
+
     const output = this._liquidateShareAmount(share, name);
     if (output.value.lessThan(minReturn))
       return {
@@ -152,7 +165,7 @@ class NeuronPool {
   borrow = (accountId, input) => {
     const { name, borrowAmount } = input;
     this._updateIndexes(name);
-    const [_, shortfall] = this._checkBorrow(accountId, name, borrowAmount);
+    const [_, shortfall] = this._checkBorrow(accountId, name, borrowAmount, 0);
     const reserve = this.reserves.get(name);
 
     if (shortfall > 0) {
@@ -194,7 +207,7 @@ class NeuronPool {
     }
 
     this._updateIndexes(name);
-    const [_, shortfall] = this._checkBorrow(accountId, name, borrowAmount);
+    const [_, shortfall] = this._checkBorrow(accountId, name, borrowAmount, 0);
     const reserve = this.reserves.get(name);
 
     if (shortfall > 0) {
@@ -239,6 +252,12 @@ class NeuronPool {
 
     // TODO: fee on transaction
     const actualRepayAmount = repayAmount;
+    
+    if (accountBorrows.lessThan(actualRepayAmount)) {
+      console.log("repay amount greater then borrow");
+      return false;
+    }
+
     const accountBorrowsNew = accountBorrows.minus(actualRepayAmount);
     const totalBorrowsNew = reserve.totalBorrows.minus(actualRepayAmount);
 
@@ -352,7 +371,7 @@ class NeuronPool {
       return new D(0);
     }
 
-    const [sumLiquidity] = this._checkBorrow(accountId, name, 0);
+    const [sumLiquidity] = this._checkBorrow(accountId, name, 0, 0);
     const oraclePrice = this.reserves.get(name).price;
     return new D(sumLiquidity).div(oraclePrice);
   };
@@ -468,6 +487,12 @@ class NeuronPool {
     // TODO: fee
     // https://github.com/compound-finance/compound-protocol/blob/master/contracts/CToken.sol#L891
     const actualRepayAmount = repayAmount; // payer make transfer repayAmount
+
+    if (borrowBalance.lessThan(actualRepayAmount)) {
+      console.log("repay amount greater then borrow");
+      return false;
+    }
+
     const accountBorrowsNew = borrowBalance.minus(actualRepayAmount);
     const totalBorrowsNew = reserve.totalBorrows.minus(actualRepayAmount);
 
@@ -748,7 +773,7 @@ class NeuronPool {
 
   _liquidateBorrowAllowed = (accountId, name) => {
     // https://github.com/compound-finance/compound-protocol/blob/29eaad96127808dc87caf97ea13be495c37b77b1/contracts/ComptrollerG4.sol#L490
-    const [_, shortfall] = this._checkBorrow(accountId, name, 0);
+    const [_, shortfall] = this._checkBorrow(accountId, name, 0, 0);
 
     if (shortfall === 0) {
       return new D(0);
@@ -770,7 +795,7 @@ class NeuronPool {
       : new D(0);
   };
 
-  _checkBorrow = (accountId, name, borrowAmount) => {
+  _checkBorrow = (accountId, name, borrowAmount, redeemTokens) => {
     const account = this.accounts.get(accountId);
     const collateralFactor = this.collateralFactor;
 
@@ -795,7 +820,8 @@ class NeuronPool {
         const totalCollateral = xToken.times(tokensToDenominator).abs();
         const totalBorrowPlusEffects =
           tokenName === name
-            ? borrowBalance.plus(borrowAmount).times(oraclePrice).abs()
+          // (borrowBalance + borrowAmount) * oraclePrice + tokensToDenom * redeemTokens
+            ? borrowBalance.plus(borrowAmount).times(oraclePrice).plus(tokensToDenominator.times(redeemTokens))
             : borrowBalance.times(oraclePrice).abs();
         return [totalCollateral, totalBorrowPlusEffects];
       })
@@ -823,7 +849,7 @@ class NeuronPool {
   _updateAccountsIndex = () => {
     Object.keys(this.accounts.all()).forEach((accountId) => {
       this._getTokens().forEach((name) => {
-        this._checkBorrow(accountId, name, 0);
+        this._checkBorrow(accountId, name, 0, 0);
       });
     });
   };
