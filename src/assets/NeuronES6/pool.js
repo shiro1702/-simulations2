@@ -157,12 +157,12 @@ class NeuronPool {
 
     if (shortfall > 0) {
       console.log("not enough collateral");
-      return;
+      return false;
     }
 
     if (reserve.value.lt(borrowAmount)) {
       console.log(`not enough reserve ${name}`);
-      return;
+      return false;
     }
 
     const accountBorrows = this.accounts.countBorrow(
@@ -182,6 +182,7 @@ class NeuronPool {
     this.accounts.addBalance(accountId, name, borrowAmount);
     this._countWeights();
     this._updateAccountsIndex();
+    return true;
   };
 
   mint = (accountId, input) => {
@@ -189,7 +190,7 @@ class NeuronPool {
 
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
-      return;
+      return false;
     }
 
     this._updateIndexes(name);
@@ -198,7 +199,7 @@ class NeuronPool {
 
     if (shortfall > 0) {
       console.log("not enough collateral");
-      return;
+      return false;
     }
 
     const accountBorrows = this.accounts.countBorrow(
@@ -219,12 +220,13 @@ class NeuronPool {
     this.accounts.addBalance(accountId, name, borrowAmount);
     this._countWeights();
     this._updateAccountsIndex();
+    return true;
   };
 
   burn = (accountId, name, repayAmount) => {
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
-      return;
+      return false;
     }
 
     this._updateIndexes(name);
@@ -250,12 +252,13 @@ class NeuronPool {
     reserve.totalBorrows = totalBorrowsNew;
     this._countWeights();
     this._updateAccountsIndex();
+    return true;
   };
 
   liquidateStable = (borrower, name, repayAmount, collateralName, payer) => {
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
-      return;
+      return false;
     }
 
     this._updateIndexesAll();
@@ -263,7 +266,7 @@ class NeuronPool {
 
     if (liqAllowed.lessThan(0) || liqAllowed.equals(0)) {
       console.log("liquidation not allowed");
-      return;
+      return false;
     }
 
     const seizeTokens = this._liquidateCalculateSeizeTokens(
@@ -274,14 +277,12 @@ class NeuronPool {
     const penaltySeizeTokens = this.dynamicParams.penaltyCoefficient.times(
       seizeTokens
     );
+    
+    const collateralDeposit = this.accounts .getDeposit(borrower, collateralName);
 
-    if (
-      this.accounts
-        .getDeposit(borrower, collateralName)
-        .share.lt(seizeTokens.plus(penaltySeizeTokens))
-    ) {
+    if (!collateralDeposit || collateralDeposit.share.lt(seizeTokens.plus(penaltySeizeTokens))) {
       console.log("borrower not enough collateral");
-      return;
+      return false;
     }
 
     if (
@@ -289,7 +290,7 @@ class NeuronPool {
       this.accounts.get(payer).balance[name].lt(repayAmount)
     ) {
       console.log("payer not enough balance");
-      return;
+      return false;
     }
 
     this.burn(borrower, name, repayAmount);
@@ -306,7 +307,7 @@ class NeuronPool {
 
     if (collateralValue.error) {
       console.log(collateralValue.error);
-      return;
+      return false;
     }
 
     // FIXME: small hack
@@ -333,7 +334,7 @@ class NeuronPool {
 
     if (penaltyValue.error) {
       console.log(penaltyValue.error);
-      return;
+      return false;
     }
 
     // FIXME: small hack
@@ -342,12 +343,13 @@ class NeuronPool {
       .get(penaltyValue.name)
       .totalReserves.plus(penaltyValue.value);
     this._updateAccountsIndex();
+    return true;
   };
 
   getMaxMint = (accountId, name) => {
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
-      return;
+      return new D(0);
     }
 
     const [sumLiquidity] = this._checkBorrow(accountId, name, 0);
@@ -386,9 +388,11 @@ class NeuronPool {
         .get(outToken)
         .value.minus(outAmount);
       const stabShare = this._stabShare(inputFee);
+
       this.reserves.get(inToken).value = this.reserves
         .get(inToken)
         .value.plus(new D(value).sub(stabShare));
+      
       this._addToStabFund(inToken, stabShare);
       this.accounts.addBalance(accountId, output.name, output.value);
       this._countWeights();
@@ -484,7 +488,7 @@ class NeuronPool {
 
     if (liqAllowed.lessThan(0) || liqAllowed.equals(0)) {
       console.log("liquidation not allowed");
-      return;
+      return false;
     }
 
     const seizeTokens = this._liquidateCalculateSeizeTokens(
@@ -493,11 +497,11 @@ class NeuronPool {
       repayAmount
     );
 
-    if (
-      this.accounts.getDeposit(borrower, collateralName).share.lt(seizeTokens)
-    ) {
+    const collateralDeposit = this.accounts.getDeposit(borrower, collateralName);
+
+    if (!collateralDeposit || collateralDeposit.share.lt(seizeTokens)) {
       console.log("borrower not enough collateral");
-      return;
+      return false;
     }
 
     if (
@@ -505,7 +509,7 @@ class NeuronPool {
       this.accounts.get(payer).balance[name].lt(repayAmount)
     ) {
       console.log("payer not enough balance");
-      return;
+      return false;
     }
 
     this.repay(borrower, name, repayAmount);
@@ -522,7 +526,7 @@ class NeuronPool {
 
     if (collateralValue.error) {
       console.log(collateralValue.error);
-      return;
+      return false;
     }
 
     // FIXME: small hack
@@ -539,6 +543,7 @@ class NeuronPool {
       collateralValue.value
     );
     this._updateAccountsIndex();
+    return true;
   };
 
   getMaxBorrow = (accountId, name) => {
@@ -687,7 +692,7 @@ class NeuronPool {
     const tokens = this._getTokens();
 
     if (!tokens.length) {
-      return;
+      return false;
     }
 
     this._countCapital();
@@ -699,6 +704,7 @@ class NeuronPool {
         .capital.times(100)
         .div(fullCapital);
     });
+    return true;
   };
 
   // see bancor balancedWeights(...)
@@ -709,7 +715,7 @@ class NeuronPool {
 
     const logBs = token1.value.div(token1.staked).ln();
     if (logBs.abs().lt(0.001) === true) {
-      return;
+      return false;
     }
 
     //const exRate = this._getSpotPrice(tokenId2, tokenId1);
@@ -724,6 +730,7 @@ class NeuronPool {
 
     token1.weight = w1;
     token2.weight = w2;
+    return true;
   };
 
   _countCapital = () => {

@@ -42,6 +42,7 @@
           
           <div class="column is-half">
             <b-button expanded type="is-primary" outlined
+              :disabled="tickDisble"
               @click="nextTick()">Сделать шаг</b-button>
           </div>
           
@@ -117,7 +118,7 @@
         </section>
       </div>
     </b-modal>
-    <b-modal v-model="createDepositModal" :width="440">
+    <b-modal v-model="createDepositModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Сделать депозит</h2>
@@ -153,13 +154,14 @@
                 <h2 class="is-size-6">Внести {{createDepositInfo.tokenInput}}<br> 
                 {{createDepositInfo.token}} от аккаунта №{{createDepositInfo.account+1}} в депозит</h2>
                 <b-button expanded type="is-primary" outlined
-                 @click="createDeposit(createDepositInfo), createDepositModal = false">Подтвердить</b-button>
+                  :disabled="createDepositBtn"
+                  @click="createDeposit(createDepositInfo), createDepositModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
       </div>
     </b-modal>
-    <b-modal v-model="returnDepositModal" :width="440">
+    <b-modal v-model="returnDepositModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Вернуть депозит</h2>
@@ -169,10 +171,10 @@
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
                   <b-radio 
-                      v-model="returnDeposit.account"
+                      v-model="returnDepositInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setReturnOptionToDeposit(index)"
+                      @click.native="setReturnOptionToDeposit(parseInt(index))"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -196,7 +198,8 @@
                 {{returnDepositInfo.token}} от аккаунта №{{returnDepositInfo.account+1}} на личный баланс</h2>
 
                 <b-button expanded type="is-primary" outlined
-                 @click="returnDeposit(returnDepositInfo), returnDepositModal = false">Подтвердить</b-button>
+                  :disabled="returnDepositBtn"
+                  @click="returnDeposit(returnDepositInfo), returnDepositModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -215,7 +218,7 @@
                       v-model="borrowInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setReturnOptionToBorrow(index, borrowInfo.token)"
+                      @click.native="setReturnOptionToBorrow(parseInt(index), borrowInfo.token)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -262,7 +265,7 @@
                       v-model="mintInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setMaxToMint(index, mintInfo.token)"
+                      @click.native="setMaxToMint(parseInt(index), mintInfo.token)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -516,6 +519,7 @@ export default {
   // },
   data() {
     return {
+      tickDisble: true,
       tokenModal: false,
       priceModal: false,
       createDepositModal: false,
@@ -794,8 +798,28 @@ export default {
       this.form1.forEach(item => {
         confog[item.name] = item.value;
       });
-      console.log('config 1 ', confog);
       return confog
+    },
+    createDepositBtn(){
+      return !(
+        this.createDepositInfo.token != '' && 
+        parseFloat(this.createDepositInfo.value) > 0 && 
+        this.poolAccounts[this.createDepositInfo.account] && 
+        this.poolAccounts[this.createDepositInfo.account].balance && 
+        this.poolAccounts[this.createDepositInfo.account].balance[this.createDepositInfo.token] &&
+        parseFloat(this.createDepositInfo.value) <= parseFloat( this.poolAccounts[this.createDepositInfo.account].balance[this.createDepositInfo.token].toString() )
+      )
+    },
+    returnDepositBtn(){
+      const index = this.returnDepositInfo.options.findIndex(item=>{
+        return item.name == this.returnDepositInfo.token
+      })
+      return !(
+        this.returnDepositInfo.token != '' && 
+        parseFloat(this.returnDepositInfo.value) > 0 && 
+        this.returnDepositInfo.options[index] &&
+        parseFloat(this.returnDepositInfo.value) <= parseFloat( this.returnDepositInfo.options[index].value )
+      )
     }
   },
   watch: {
@@ -863,46 +887,19 @@ export default {
     // },
 
     updateResults(){
-      // console.log( window.pool.getInfo(this.pricesFormat) );
-      // console.log( window.pool.getInfo(this.pricesFormat).reserves );
+      
       let getInfo = window.pool.getInfo(this.pricesFormat)
       this.table = [];
       let reserves = getInfo.reserves;
-      this.updateAccounts(this.pricesFormat)
-      // let accounts  = getInfo.accounts;
-      // console.log('accounts', accounts);
-
-      // for (const index in accounts) {
-      //   let item = accounts[index];
-        
-      //   let element = {};
-      //   element.i = index;
-      //   element.data = this.accounts[index].map((item)=>item);
-      //   console.log('data', element.data);
-      //   for (const key in item.balance) {
-          
-      //     if (Object.prototype.hasOwnProperty.call(item.balance[key], key)) {
-      //       const index2 = this.accounts[index].findIndex(item2=>{
-      //           return item2.name == key
-      //       })
-      //       element.data[index2] = item.balance[key].toString();
-      //       console.log('index2', index2);
-      //       console.log('key', key);
-      //       console.log('balance', element.data[index2]);
-      //       // element.data.checked
-      //       // element.data.checked = true;
-      //       // element.data[key] = item.balance[key].toString();
-      //     }
-      //   }
-      //   this.accountEdit(element);
-      //   setTimeout(() => {
-          
-      //   console.log('this.accountsChecked', this.accountsChecked);
-
-      //   }, 10);
-
-      // }
+      this.updateAccounts(this.pricesFormat);
       
+      // тик только при наличии депозита
+      const poolDeposit = window.pool._getTokens().filter((t) => !window.pool.reserves.getValue(t).equals(0));
+      if (poolDeposit && poolDeposit.length > 0){
+        this.tickDisble = false;
+      }
+      // end тик только при наличии депозита
+
       for (const key in reserves) {
         if (Object.prototype.hasOwnProperty.call(reserves, key)) {
 
@@ -924,7 +921,7 @@ export default {
       this.history.push('pool tick');
     },
     createDeposit(createDepositInfo){
-      window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: createDepositInfo.value });
+      window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: parseFloat(createDepositInfo.value) });
       this.updateResults();
 
       this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
@@ -945,10 +942,20 @@ export default {
     },
     returnDeposit(returnDepositInfo){
       // console.log(window.pool.redeem(accountId1, "BTC", 100));
-      window.pool.redeem(returnDepositInfo.account, returnDepositInfo.token, returnDepositInfo.value);
+      console.log('account', returnDepositInfo.account);
+      console.log('token', returnDepositInfo.token);
+      console.log('value', returnDepositInfo.value);
+      const test = window.pool.redeem(returnDepositInfo.account, returnDepositInfo.token, parseFloat(returnDepositInfo.value) );
       this.updateResults();
-
-      this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
+      if (test.error) {
+        this.$buefy.toast.open({
+          message: `Ошибка вывода средств! ${test.error.message}`,
+          type: 'is-danger'
+        })
+      } else {
+        console.log('test', test);
+        this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
+      }
     },
     setReturnOptionToBorrow(val, val2){
       // console.log(val);
@@ -957,12 +964,12 @@ export default {
       this.borrowInfo.maxBorrow = window.pool.getMaxBorrow(val, val2);
     },
     borrow(borrowInfo){
-      window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.value });
+      window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: parseFloat(borrowInfo.value) });
       this.updateResults();
       this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
     },
     repay(repayInfo){
-      window.pool.repay(repayInfo.account, repayInfo.token, repayInfo.value);
+      window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
       this.updateResults();
       this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
     },
@@ -990,7 +997,7 @@ export default {
       this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
     },
     liquidate(liquidateInfo){
-      window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, liquidateInfo.value, liquidateInfo.token2, liquidateInfo.account2);
+      window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
       this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}`);
     },
@@ -1008,7 +1015,7 @@ export default {
       this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token);
     },
     mint(mintInfo){
-      window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: mintInfo.value });
+      window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: parseFloat(mintInfo.value) });
       this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
       this.updateResults();
     },
