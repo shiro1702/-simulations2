@@ -945,7 +945,7 @@ export default {
     },
     returnDeposit(returnDepositInfo){
       // console.log(window.pool.redeem(accountId1, "BTC", 100));
-      window.pool.redeem(returnDepositInfo.account, { name: returnDepositInfo.token, value: returnDepositInfo.value });
+      window.pool.redeem(returnDepositInfo.account, returnDepositInfo.token, returnDepositInfo.value);
       this.updateResults();
 
       this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
