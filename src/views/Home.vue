@@ -87,12 +87,12 @@
       </div>
     </div>
     <div class="columns fullHeight">
-      <div class="column">
+      <div class="column is-9">
         <h2 class="is-size-4 mb-3">Результат</h2>
          
           <b-table :data="this.table" :columns="columns"></b-table>
       </div>
-      <div class="column">
+      <div class="column is-3">
         <h2 class="is-size-4 mb-3 ">История</h2>
         <div class="history" ref="history">
           <div v-for="(item, index) in history" :key="index">
