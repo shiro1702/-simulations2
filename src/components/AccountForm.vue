@@ -1,7 +1,7 @@
 <template>
   <div class="">
-    <h2 v-if="i < 0" class="is-size-4">new account</h2>
-    <h2 v-else class="is-size-4"> account {{i + 1}}</h2>
+    <h2 v-if="i < 0" class="is-size-4 mb-3">new account</h2>
+    <h2 v-else class="is-size-4 mb-3"> account {{i + 1}}</h2>
     <div v-for="item in currentAccount" 
         :key="item.name"
         class="is-flex is-align-items-center mb-4"

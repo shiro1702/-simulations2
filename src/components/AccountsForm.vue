@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <h2 class="is-size-4">{{title}}</h2>
+    <h2 class="is-size-4 mb-3">{{title}}</h2>
     <div class="accountsFrom__scroll">
 
     </div>

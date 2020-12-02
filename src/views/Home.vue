@@ -33,7 +33,7 @@
         <cmp-form :form="bargaining" title="Торги">
         </cmp-form> -->
 
-        <h2 class="is-size-4">Операции</h2>
+        <h2 class="is-size-4 mb-3">Операции</h2>
         <div class="columns is-multiline">
 
           <!-- <div class="column is-half">
@@ -72,7 +72,7 @@
           
           <div class="column is-half">
             <b-button expanded type="is-primary" outlined
-            @click="repayModal = true">Вернуть займ</b-button>
+            @click="repayModal = true">Вернуть займ </b-button>
           </div>
           
           <div class="column is-half">
@@ -88,12 +88,12 @@
     </div>
     <div class="columns fullHeight">
       <div class="column">
-        <h2 class="is-size-4">Результат</h2>
+        <h2 class="is-size-4 mb-3">Результат</h2>
          
           <b-table :data="this.table" :columns="columns"></b-table>
       </div>
       <div class="column">
-        <h2 class="is-size-4 ">История</h2>
+        <h2 class="is-size-4 mb-3 ">История</h2>
         <div class="history" ref="history">
           <div v-for="(item, index) in history" :key="index">
             {{index}}) {{item}}
@@ -120,7 +120,7 @@
     <b-modal v-model="createDepositModal" :width="440">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Сделать депозит</h2>
+          <h2 class="is-size-4 mb-3">Сделать депозит</h2>
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
@@ -160,7 +160,7 @@
     <b-modal v-model="returnDepositModal" :width="440">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Вернуть депозит</h2>
+          <h2 class="is-size-4 mb-3">Вернуть депозит</h2>
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
@@ -203,7 +203,7 @@
     <b-modal v-model="borrowModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Взять займ</h2>
+          <h2 class="is-size-4 mb-3">Взять займ</h2>
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
@@ -236,7 +236,7 @@
                 </div>
               </div>
               <div class="column is-4">
-                <h2 class="is-size-6">Обеспеченность займа: 130% </h2>
+                <h2 class="is-size-6">Обеспеченность займа: 200% </h2>
                 <h2 class="is-size-6">Занять <br>
                   {{borrowInfo.payValue}} {{borrowInfo.token}} <br>
                 аккаунту №{{borrowInfo.account+1}}</h2>
@@ -250,7 +250,7 @@
     <b-modal v-model="mintModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Выпуск стейблкоинов</h2>
+          <h2 class="is-size-4 mb-3">Выпуск стейблкоинов</h2>
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
@@ -295,7 +295,7 @@
     <b-modal v-model="tradeModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Обмен</h2>
+          <h2 class="is-size-4 mb-3">Обмен</h2>
             <div class="columns is-multiline">
               <div class="column is-3">
                 <h2 class="is-size-6">account</h2>
@@ -305,8 +305,8 @@
                       v-model="tradeInfo.account"
                       name="account"
                       :native-value="index"
-                      @click.native="setMaxToMint(index, tradeInfo.token)"
                       >
+                      <!-- @click.native="setMaxToMint(index, tradeInfo.token)" -->
                       №{{index+1}}
                   </b-radio>
                 </div>
@@ -356,7 +356,7 @@
     <b-modal v-model="repayModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Вернуть займ</h2>
+          <h2 class="is-size-4 mb-3">Вернуть займ</h2>
             <div class="columns is-multiline">
               <div class="column is-4">
                 <h2 class="is-size-6">account</h2>
@@ -405,7 +405,7 @@
     <b-modal v-model="liquidateModal" :width="740">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
-          <h2 class="is-size-4">Ликвидация займа</h2>
+          <h2 class="is-size-4 mb-3">Ликвидация займа</h2>
             <div class="columns is-multiline">
               <div class="column is-2">
                 <h2 class="is-size-6">account</h2>
@@ -429,7 +429,7 @@
                 <div v-for="(item, index) in liquidateInfo.options"
                     :key="index">
                   <b-radio 
-                      v-model="token"
+                      v-model="liquidateInfo.token"
                       name="token"
                       :native-value="item"
                       @click.native="setMaxLiquidate(liquidateInfo.account, item)"
@@ -456,7 +456,7 @@
                 <div v-for="(item, index) in liquidateInfo.options"
                     :key="index">
                   <b-radio 
-                      v-model="token2"
+                      v-model="liquidateInfo.token2"
                       name="token2"
                       :native-value="item"
                       >
@@ -785,7 +785,6 @@ export default {
       this.prices.forEach(item => {
         price[item.name] = item.value;
       });
-      console.log('prices 1 ', price);
       return price
     },
     config(){
@@ -805,13 +804,39 @@ export default {
       pool.createPool(val);
       oracle.init(val);
     },
+    pricesFormat(){
+      this.updateResults();
+    },
     history(){
-      console.log(this.$refs.history);
-      console.log(this.$refs.history.scrollHeight);
       this.$refs.history.scrollTo({
         top: this.$refs.history.scrollHeight,
         behavior: "smooth"
       });
+    },
+    returnDepositModal(val){
+      if (val){
+        this.setReturnOptionToDeposit(this.returnDeposit.account);
+      }
+    },
+    borrowModal(val){
+      if (val){
+        this.setReturnOptionToBorrow(this.borrowInfo.account, this.borrowInfo.token);
+      }
+    },
+    mintModal(val){
+      if (val){
+        this.setMaxToMint(this.mintInfo.account, this.mintInfo.token);
+      }
+    },
+    repayModal(val){
+      if (val){
+        this.setRepayAccountInfo(this.repayInfo.account);
+      }
+    },
+    liquidateModal(){
+      if (val){
+        this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
+      }
     },
   },
   methods: {
@@ -841,13 +866,11 @@ export default {
       pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: createDepositInfo.value });
       this.updateResults();
 
-      this.history.push(`создан депозит для акаунта №${createDepositInfo.account} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
+      this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
     },
     setReturnOptionToDeposit(val){
-
       // console.log(val);
       let balance= pool.accounts.get(val).balance
-      
       // console.log(balance);
       let options = []
       for (let key in balance) {
@@ -864,10 +887,10 @@ export default {
       pool.redeem(returnDepositInfo.account, { name: returnDepositInfo.token, value: returnDepositInfo.value });
       this.updateResults();
 
-      this.history.push(`возврат депозита для акаунта №${returnDepositInfo.account} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
+      this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
     },
     updateResults(){
-      console.log( pool.getInfo(this.pricesFormat) );
+      // console.log( pool.getInfo(this.pricesFormat) );
       // console.log( pool.getInfo(this.pricesFormat).reserves );
       this.table = [];
       let reserves = pool.getInfo(this.pricesFormat).reserves
@@ -895,13 +918,12 @@ export default {
     borrow(borrowInfo){
       pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.getValue });
       this.updateResults();
-      this.history.push(`акаунт №${borrowInfo.account} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+      this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
     },
     repay(repayInfo){
       pool.repay(repayInfo.account, repayInfo.token, repayInfo.value);
       this.updateResults();
-
-      this.history.push(`акаунт №${repayInfo.account} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
+      this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
     },
     setRepayAccountInfo(accountIndex){
       let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
@@ -929,8 +951,7 @@ export default {
     liquidate(liquidateInfo){
       pool.liquidate(liquidateInfo.account, liquidateInfo.token, liquidateInfo.value, liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
-
-      this.history.push(`акаунт №${liquidateInfo.account2} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account}  `);
+      this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}  `);
     },
     // setLiquidateccountInfo(accountIndex){
     //   let account = pool.getInfo(this.pricesFormat).accounts[accountIndex];
@@ -947,15 +968,14 @@ export default {
     },
     mint(mintInfo){
       pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: mintInfo.value });
-
-      this.history.push(`акаунт №${mintInfo.account} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
+      this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
     },
     trade(tradeInfo){
       console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       const trade1 = pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       console.log(trade1);
       this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value}`)
-      this.history.push(`акаунт №${tradeInfo.account} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value})`);
+      this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value})`);
     },
 
   },
