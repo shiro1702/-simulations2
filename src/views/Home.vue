@@ -427,7 +427,7 @@
                       v-model="liquidateInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setMaxLiquidate(parseInt(index), liquidateInfo.token)"
+                      @click.native="setMaxLiquidate(parseInt(index), liquidateInfo.token), setLiqidateOptions1(parseInt(index)), setLiqidateOptions(parseInt(index), parseInt(liquidateInfo.account2))"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -438,19 +438,17 @@
                 <h2 class="is-size-6">token max({{liquidateInfo.maxLiquidate}})</h2>
 
                 <b-input type="text" class="is-flex-grow-2" v-model="liquidateInfo.value" ></b-input>
-                <template v-if="poolAccounts[createDepositInfo.account]">
-                  <div v-for="(item, index) in poolAccounts[liquidateInfo.account].balance"
-                      :key="index">
-                    <b-radio 
-                        v-model="liquidateInfo.token"
-                        name="token"
-                        :native-value="index"
-                        @click.native="setMaxLiquidate(liquidateInfo.account, item)"
-                        >
-                        {{index}}
-                    </b-radio>
-                  </div>
-                </template>
+                <div v-for="(item, index) in liquidateInfo.options1"
+                    :key="index">
+                  <b-radio 
+                      v-model="liquidateInfo.token"
+                      name="token"
+                      :native-value="item"
+                      @click.native="setMaxLiquidate(liquidateInfo.account, item)"
+                      >
+                      {{item}}
+                  </b-radio>
+                </div>
               </div>
               <div class="column is-2">
                 <h2 class="is-size-6">account2</h2>
@@ -460,6 +458,7 @@
                       v-model="liquidateInfo.account2"
                       name="account2"
                       :native-value="parseInt(index)"
+                      @click.native="setLiqidateOptions(parseInt(liquidateInfo.account), parseInt(index))"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -468,18 +467,16 @@
               <div class="column is-2">
                 <h2 class="is-size-6">token2</h2>
 
-                <template v-if="poolAccounts[liquidateInfo.account2]">
-                  <div v-for="(item, index) in poolAccounts[liquidateInfo.account2].balance"
+                  <div v-for="(item, index) in liquidateInfo.options"
                       :key="index">
                     <b-radio 
                         v-model="liquidateInfo.token2"
                         name="token2"
-                        :native-value="index"
+                        :native-value="item"
                         >
-                        {{index}} {{item}}
+                        {{item}}
                     </b-radio>
                   </div>
-                </template>
               </div>
               <div class="column is-4">
                 <h3 class="is-size-8">
@@ -583,7 +580,8 @@ export default {
         account2: 0,
         value: 0,
         maxLiquidate: 0,
-        options: config.tokens,
+        options1: [],
+        options: [],
         borrows: 0,
         token: '',
         token2: '',
@@ -885,6 +883,8 @@ export default {
     liquidateModal(val){
       if (val){
         this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
+        this.setLiqidateOptions1(this.liquidateInfo.account)
+        this.setLiqidateOptions(this.liquidateInfo.account, this.liquidateInfo.account2)
       }
     },
   },
@@ -1030,6 +1030,17 @@ export default {
     },
     setMaxLiquidate(accountId, token){
       this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
+    },
+    setLiqidateOptions1(accountId1){
+      // this.liquidateInfo.options = Object.keys(pool.accounts.get(accountId).deposits)
+     this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).deposits)
+      
+    },
+    setLiqidateOptions(accountId1, accountId2){
+console.log(accountId1,accountId2 );
+      // this.liquidateInfo.options = Object.keys(pool.accounts.get(accountId).deposits)
+      this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
+      console.log(this.liquidateInfo.options);
     },
     liquidate(liquidateInfo){
       window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);

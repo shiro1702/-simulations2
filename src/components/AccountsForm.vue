@@ -18,7 +18,7 @@
         </b-button>
       </div>
       <div class="is-flex is-flex-wrap-wrap">
-        <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-4">
+        <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-3 mb-3">
           <b-taglist attached>
             <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
             <b-tag type="is-primary" size="is-medium">{{item2}}</b-tag>
