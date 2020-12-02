@@ -87,8 +87,8 @@
         </div>
       </div>
     </div>
-    <div class="columns fullHeight">
-      <div class="column is-9">
+    <div class="columns fullHeight" >
+      <div class="column is-9" style="overflow: scroll">
         <h2 class="is-size-4 mb-3">Результат</h2>
          
           <b-table :data="this.table" :columns="columns"></b-table>
@@ -246,6 +246,8 @@
                   {{borrowInfo.payValue}} {{borrowInfo.token}} <br>
                 аккаунту №{{borrowInfo.account+1}}</h2>
                 <b-button expanded type="is-primary" outlined
+                
+                  :disabled="borrowBtn"
                  @click="borrow(borrowInfo), borrowModal = false">Подтвердить</b-button>
               </div>
             </div>
@@ -354,7 +356,8 @@
                 <h2 class="is-size-6">
                   Обменять для аккаунта  №{{tradeInfo.account+1}} {{tradeInfo.token}} {{tradeInfo.value}} на {{tradeInfo.token2}} </h2>
                 <b-button expanded type="is-primary" outlined
-                 @click="trade(tradeInfo), tradeModal = false">Подтвердить</b-button>
+                  :disabled="createTradeBtn"
+                  @click="trade(tradeInfo), tradeModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -820,7 +823,24 @@ export default {
         this.returnDepositInfo.options[index] &&
         parseFloat(this.returnDepositInfo.value) <= parseFloat( this.returnDepositInfo.options[index].value )
       )
-    }
+    },
+    createTradeBtn(){
+      return !(
+        this.tradeInfo.token != '' && 
+        parseFloat(this.tradeInfo.value) > 0 && 
+        this.poolAccounts[this.tradeInfo.account] && 
+        this.poolAccounts[this.tradeInfo.account].balance && 
+        this.poolAccounts[this.tradeInfo.account].balance[this.tradeInfo.token] &&
+        parseFloat(this.tradeInfo.value) <= parseFloat( this.poolAccounts[this.tradeInfo.account].balance[this.tradeInfo.token].toString() )
+      )
+    },
+    borrowBtn(){
+      return !(
+        this.borrowInfo.token != '' && 
+        parseFloat(this.borrowInfo.value) > 0 && 
+        parseFloat(this.borrowInfo.value) <= parseFloat( this.borrowInfo.maxBorrow.toString() )
+      )
+    },
   },
   watch: {
     // accountsChecked(){
@@ -952,6 +972,7 @@ export default {
           message: `Ошибка вывода средств! ${test.error.message}`,
           type: 'is-danger'
         })
+        this.history.push(`ошибка возврата депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
       } else {
         console.log('test', test);
         this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
@@ -960,13 +981,24 @@ export default {
     setReturnOptionToBorrow(val, val2){
       // console.log(val);
       // maxBorrow
-      console.log('getMaxBorrow', window.pool.getMaxBorrow(val, val2));
-      this.borrowInfo.maxBorrow = window.pool.getMaxBorrow(val, val2);
+      console.log('getMaxBorrow', window.pool.getMaxBorrow(val, val2).toString());
+      this.borrowInfo.maxBorrow = window.pool.getMaxBorrow(val, val2).toString();
     },
     borrow(borrowInfo){
-      window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: parseFloat(borrowInfo.value) });
+      const test = window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: parseFloat(borrowInfo.value) });
       this.updateResults();
-      this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+      if (!test){
+        this.$buefy.toast.open({
+          message: `Ошибка! Не достаточно средств в Пуле`,
+          type: 'is-danger'
+        })
+        this.history.push(`не удачная попытка аккаунта №${borrowInfo.account + 1} взять займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+      } else {
+
+        this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+      }
+
+
     },
     repay(repayInfo){
       window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
@@ -1024,8 +1056,8 @@ export default {
       const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       this.updateResults();
       console.log(trade1);
-      this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value}`)
-      this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value})`);
+      this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value.toString()}`)
+      this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value.toString()})`);
     },
 
   },

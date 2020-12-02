@@ -114,15 +114,7 @@ export default {
     }
   },
   created(){
-    // console.log('created', this.i);
-    if (this.i < 0){
-      this.currentAccount = this.defaultAccount.map(item => item);
-    } else {
-      // console.log(this.poolAccounts[this.i].balance);
-      this.currentAccount = this.unformat(this.poolAccounts[this.i].balance);
-    }
-    // console.log('this.currentAccount', this.currentAccount);
-
+    this.currentAccount = this.defaultAccount.map(item => item);
   },
 
 }
