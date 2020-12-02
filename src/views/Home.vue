@@ -80,6 +80,11 @@
             <b-button expanded type="is-primary" outlined
             @click="liquidateModal = true">Ликвидация займа</b-button>
           </div>
+
+          <div class="column is-half">
+            <b-button expanded type="is-primary" outlined
+            @click="liquidateStableModal = true">Ликвидация стейбл</b-button>
+          </div>
 <!--           
           <div class="column is-half">
             <b-button expanded type="is-danger" outlined>Сброс</b-button>
@@ -282,7 +287,7 @@
                       name="token1"
                       :native-value="item"
                       
-                      @click.native="setReturnOptionToBorrow(mintInfo.account, item)">
+                      @click.native="setMaxToMint(mintInfo.account, item)">
                       {{item}}
                   </b-radio>
                 </div>
@@ -481,11 +486,88 @@
               <div class="column is-4">
                 <h3 class="is-size-8">
                   Ликвидировать займ аккаунта №{{liquidateInfo.account+1}} 
-                  и перевести 1200 {{liquidateInfo.token}} в пул
+                  и перевести {{liquidateInfo.token}} в пул
                   
                 </h3>
                 <b-button expanded type="is-primary" outlined
                  @click="liquidate(liquidateInfo), liquidateModal = false">Подтвердить</b-button>
+              </div>
+            </div>
+        </section>
+      </div>
+    </b-modal>
+    <b-modal v-model="liquidateStableModal" :width="740">
+      <div class="modal-card modal-content-height" style="width: auto">
+        <section class="modal-card-body">
+          <h2 class="is-size-4 mb-3">Ликвидация стейбл коинов</h2>
+            <div class="columns is-multiline">
+              <div class="column is-2">
+                <h2 class="is-size-6">account</h2>
+                <div v-for="(item, index) in poolAccounts"
+                    :key="index">
+                  <b-radio 
+                      v-model="liquidateStableInfo.account"
+                      name="account"
+                      :native-value="parseInt(index)"
+                      @click.native="setLiqidateStableOptions1(parseInt(index)), setLiqidateStableOptions(parseInt(index), parseInt(liquidateStableInfo.account2))"
+                      >
+                      №{{parseInt(index)+1}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-2">
+                
+                <h2 class="is-size-6">token max({{liquidateStableInfo.maxLiquidate}})</h2>
+
+                <b-input type="text" class="is-flex-grow-2" v-model="liquidateStableInfo.value" ></b-input>
+                <div v-for="(item, index) in liquidateStableInfo.options1"
+                    :key="index">
+                  <b-radio 
+                      v-model="liquidateStableInfo.token"
+                      name="token"
+                      :native-value="item"
+                      >
+                      <!-- @click.native="setMaxLiquidate(liquidateStableInfo.account, item)" -->
+                      {{item}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-2">
+                <h2 class="is-size-6">account2</h2>
+                <div v-for="(item, index) in poolAccounts"
+                    :key="index">
+                  <b-radio 
+                      v-model="liquidateStableInfo.account2"
+                      name="account2"
+                      :native-value="parseInt(index)"
+                      @click.native="setLiqidateStableOptions(parseInt(liquidateStableInfo.account), parseInt(index))"
+                      >
+                      №{{parseInt(index)+1}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-2">
+                <h2 class="is-size-6">token2</h2>
+
+                  <div v-for="(item, index) in liquidateStableInfo.options"
+                      :key="index">
+                    <b-radio 
+                        v-model="liquidateStableInfo.token2"
+                        name="token2"
+                        :native-value="item"
+                        >
+                        {{item}}
+                    </b-radio>
+                  </div>
+              </div>
+              <div class="column is-4">
+                <h3 class="is-size-8">
+                  Ликвидировать стейбл коины аккаунта №{{liquidateStableInfo.account+1}} 
+                  и перевести {{liquidateStableInfo.token}} в пул
+                  
+                </h3>
+                <b-button expanded type="is-primary" outlined
+                 @click="liquidateS(liquidateStableInfo), liquidateModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -576,6 +658,18 @@ export default {
       },
       liquidateModal: false,
       liquidateInfo: {
+        account: 0,
+        account2: 0,
+        value: 0,
+        maxLiquidate: 0,
+        options1: [],
+        options: [],
+        borrows: 0,
+        token: '',
+        token2: '',
+      },
+      liquidateStableModal: false,
+      liquidateStableInfo: {
         account: 0,
         account2: 0,
         value: 0,
@@ -872,7 +966,7 @@ export default {
     },
     mintModal(val){
       if (val){
-        this.setMaxToMint(this.mintInfo.account, this.mintInfo.token);
+        this.setMaxToMint(parseInt(this.mintInfo.account), this.mintInfo.token);
       }
     },
     repayModal(val){
@@ -885,6 +979,13 @@ export default {
         this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
         this.setLiqidateOptions1(this.liquidateInfo.account)
         this.setLiqidateOptions(this.liquidateInfo.account, this.liquidateInfo.account2)
+      }
+    },
+    liquidateStableModal(val){
+      if (val){
+        // this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
+        this.setLiqidateStableOptions1(this.liquidateStableInfo.account)
+        this.setLiqidateStableOptions(this.liquidateStableInfo.account, this.liquidateStableInfo.account2)
       }
     },
   },
@@ -1033,19 +1134,30 @@ export default {
     },
     setLiqidateOptions1(accountId1){
       // this.liquidateInfo.options = Object.keys(pool.accounts.get(accountId).deposits)
-     this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).deposits)
+     this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows)
       
     },
     setLiqidateOptions(accountId1, accountId2){
-console.log(accountId1,accountId2 );
+// console.log(accountId1,accountId2 );
       // this.liquidateInfo.options = Object.keys(pool.accounts.get(accountId).deposits)
-      this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
+      this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).deposits).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
       console.log(this.liquidateInfo.options);
     },
     liquidate(liquidateInfo){
       window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
       this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}`);
+    },
+    setLiqidateStableOptions1(accountId1){
+      this.liquidateStableInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => window.pool.config.stable.includes(x))
+    },
+    setLiqidateStableOptions(accountId1, accountId2){
+      this.liquidateStableInfo.options = Object.keys(window.pool.accounts.get(accountId1).deposits).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
+    },
+    liquidateS(liquidateStableInfo){
+      window.pool.liquidateStable(liquidateStableInfo.account, liquidateStableInfo.token, parseFloat(liquidateStableInfo.value), liquidateStableInfo.token2, liquidateStableInfo.account2);
+      this.updateResults();
+      this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
     },
     // setLiquidateccountInfo(accountIndex){
     //   let account = window.pool.getInfo(this.pricesFormat).accounts[accountIndex];
@@ -1058,6 +1170,7 @@ console.log(accountId1,accountId2 );
     //   this.liquidateInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
     // },
     setMaxToMint(accountId, token){
+      console.log('setMaxToMint');
       this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token);
     },
     mint(mintInfo){
