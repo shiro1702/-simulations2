@@ -196,9 +196,7 @@
               <div class="column is-4">
                 <h2 class="is-size-6">Вывести {{returnDepositInfo.tokenInput}}<br> 
                 {{returnDepositInfo.token}} от аккаунта №{{returnDepositInfo.account+1}} на личный баланс</h2>
-
                 <b-button expanded type="is-primary" outlined
-                  :disabled="returnDepositBtn"
                   @click="returnDeposit(returnDepositInfo), returnDepositModal = false">Подтвердить</b-button>
               </div>
             </div>
@@ -312,40 +310,44 @@
                       v-model="tradeInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
+                      @click.native="setTradeResult(index, tradeInfo.token, tradeInfo.token2, tradeInfo.value)"
                       >
-                      <!-- @click.native="setMaxToMint(index, tradeInfo.token)" -->
                       №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
               <div class="column is-6">
-                <div  style="width: 50%">
 
-                  <h2 class="is-size-6">you get</h2>
-                  <b-input type="number" class="is-flex-grow-2" v-model="tradeInfo.value" ></b-input>
-                </div>
                 <div class="columns">
 
                   <div class="column is-6">
+                    <h2 class="is-size-6">you pay</h2>
+                    <b-input type="number" class="is-flex-grow-2" v-model="tradeInfo.value" @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"></b-input>
                     <template v-if="poolAccounts[tradeInfo.account]">
                       <div v-for="(item, index) in poolAccounts[tradeInfo.account].balance"
                           :key="index">
                         <b-radio 
                             v-model="tradeInfo.token"
                             name="token1"
-                            :native-value="index">
+                            :native-value="index"
+                            @click.native="setTradeResult(tradeInfo.account, index, tradeInfo.token2, tradeInfo.value)">
                             {{index}} {{item}}
                         </b-radio>
                       </div>
                     </template>
                   </div>
                   <div class="column is-6">
+
+                  <h2 class="is-size-6">you get</h2>
+                  <h2 class="is-size-6" :style="{width: '100%', height: '40px'}">{{tradeInfo.value2}}</h2>
+                    
                     <div v-for="(item, index) in tradeInfo.options"
                         :key="index">
                       <b-radio 
                           v-model="tradeInfo.token2"
                           name="token2"
-                          :native-value="item">
+                          :native-value="item"
+                          @click.native="setTradeResult(tradeInfo.account, tradeInfo.token, index,  tradeInfo.value)">
                           {{item}}
                       </b-radio>
                     </div>
@@ -354,7 +356,7 @@
               </div>
               <div class="column is-3">
                 <h2 class="is-size-6">
-                  Обменять для аккаунта  №{{tradeInfo.account+1}} {{tradeInfo.token}} {{tradeInfo.value}} на {{tradeInfo.token2}} </h2>
+                  Обменять для аккаунта  №{{tradeInfo.account+1}} {{tradeInfo.token}} {{tradeInfo.value}} на {{tradeInfo.token2}} {{tradeInfo.value2}} </h2>
                 <b-button expanded type="is-primary" outlined
                   :disabled="createTradeBtn"
                   @click="trade(tradeInfo), tradeModal = false">Подтвердить</b-button>
@@ -558,6 +560,7 @@ export default {
       tradeInfo: {
         account: 0,
         value: 0,
+        value2: 0,
         token: '',
         token2: '',
         options: config.tokens,
@@ -813,17 +816,17 @@ export default {
         parseFloat(this.createDepositInfo.value) <= parseFloat( this.poolAccounts[this.createDepositInfo.account].balance[this.createDepositInfo.token].toString() )
       )
     },
-    returnDepositBtn(){
-      const index = this.returnDepositInfo.options.findIndex(item=>{
-        return item.name == this.returnDepositInfo.token
-      })
-      return !(
-        this.returnDepositInfo.token != '' && 
-        parseFloat(this.returnDepositInfo.value) > 0 && 
-        this.returnDepositInfo.options[index] &&
-        parseFloat(this.returnDepositInfo.value) <= parseFloat( this.returnDepositInfo.options[index].value )
-      )
-    },
+    // returnDepositBtn(){
+    //   const index = this.returnDepositInfo.options.findIndex(item=>{
+    //     return item.name == this.returnDepositInfo.token
+    //   })
+    //   return !(
+    //     this.returnDepositInfo.token != '' && 
+    //     parseFloat(this.returnDepositInfo.value) > 0 && 
+    //     this.returnDepositInfo.options[index] &&
+    //     parseFloat(this.returnDepositInfo.value) <= parseFloat( this.returnDepositInfo.options[index].value )
+    //   )
+    // },
     createTradeBtn(){
       return !(
         this.tradeInfo.token != '' && 
@@ -861,7 +864,7 @@ export default {
     },
     returnDepositModal(val){
       if (val){
-        this.setReturnOptionToDeposit(this.returnDeposit.account);
+        this.setReturnOptionToDeposit(this.returnDepositInfo.account);
       }
     },
     borrowModal(val){
@@ -947,7 +950,7 @@ export default {
       this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
     },
     setReturnOptionToDeposit(val){
-      // console.log(val);
+      console.log('accounts', window.pool.accounts.get(val));
       let balance= window.pool.accounts.get(val).balance
       // console.log(balance);
       let options = []
@@ -1050,6 +1053,12 @@ export default {
       window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: parseFloat(mintInfo.value) });
       this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
       this.updateResults();
+    },
+    setTradeResult(account,token, token2, value ){
+      console.log(account, [`${token}/${token2}`, parseFloat(value)]);
+      const trade1 = window.pool.tradePool(account, [`${token}/${token2}`, parseFloat(value)], 1);
+      console.log(trade1);
+      this.tradeInfo.value2 = trade1.value.toString()
     },
     trade(tradeInfo){
       console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
