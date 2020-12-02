@@ -19,10 +19,13 @@
       </div>
       <div class="is-flex is-flex-wrap-wrap">
         <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-3 mb-3">
-          <b-taglist attached>
-            <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
-            <b-tag type="is-primary" size="is-medium">{{item2}}</b-tag>
-          </b-taglist>
+          <b-tooltip :label="item2"
+            position="is-bottom">
+            <b-taglist attached>
+              <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
+              <b-tag type="is-primary" size="is-medium">{{item2.toString().split('.')[0]}}{{item2.toString().split('.')[1]?'.'+item2.toString().split('.')[1].slice(0, 4):''}}</b-tag>
+            </b-taglist>
+          </b-tooltip>
         </div>
       </div>
     </div>

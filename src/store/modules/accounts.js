@@ -86,7 +86,7 @@ export default {
             commit('deleteItem', i);
         },
         addBalanceToAccount({state, dispatch}, {i, data, pricesFormat}){
-            if (i){
+            if (i != undefined){
                 window.pool.accounts.issueBalance(i, data)
             } else {
                 window.pool.accounts.issueBalance(Object.keys(state.poolAccounts).length, data)
