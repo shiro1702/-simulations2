@@ -833,7 +833,7 @@ export default {
         this.setRepayAccountInfo(this.repayInfo.account);
       }
     },
-    liquidateModal(){
+    liquidateModal(val){
       if (val){
         this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
       }
