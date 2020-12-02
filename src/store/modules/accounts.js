@@ -60,7 +60,12 @@ export default {
 			state.items.splice(i, 1)
         },
         setInfo(state, poolAccounts){
-            state.poolAccounts = poolAccounts;
+            state.poolAccounts = [];
+            for (const key in poolAccounts) {
+                if (Object.prototype.hasOwnProperty.call(poolAccounts, key)) {
+                    state.poolAccounts.push(poolAccounts[key])
+                }
+            }
         },
 
 	},
@@ -90,7 +95,7 @@ export default {
         },
         updateAccounts({commit}, pricesFormat){
             // window.pool.accounts.issueBalance(index, data)
-            console.log(window.pool.getInfo(pricesFormat).accounts);
+            // console.log(window.pool.getInfo(pricesFormat).accounts);
             commit('setInfo', window.pool.getInfo(pricesFormat).accounts);
         },
 	}

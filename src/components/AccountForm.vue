@@ -99,7 +99,7 @@ export default {
   methods: {
     ...mapActions('accounts', ['saveItem', 'deleteItem', 'addBalanceToAccount']),
     unformat(data){
-      console.log('data', data);
+      // console.log('data', data);
       let newData = []
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -114,14 +114,14 @@ export default {
     }
   },
   created(){
-    console.log('created', this.i);
+    // console.log('created', this.i);
     if (this.i < 0){
       this.currentAccount = this.defaultAccount.map(item => item);
     } else {
       // console.log(this.poolAccounts[this.i].balance);
       this.currentAccount = this.unformat(this.poolAccounts[this.i].balance);
     }
-    console.log('this.currentAccount', this.currentAccount);
+    // console.log('this.currentAccount', this.currentAccount);
 
   },
 
