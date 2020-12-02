@@ -61,27 +61,27 @@ export default {
       defaultAccount: [
         {
           name: "BTC",
-          value: 10500,
+          value: 100,
           checked: false,
         },
         {
           name: "ETH",
-          value: 350,
+          value: 100,
           checked: false,
         },
         {
           name: "USDT",
-          value: 1,
+          value: 100,
           checked: false,
         },
         {
           name: "EOS",
-          value: 2,
+          value: 100,
           checked: false,
         },
         {
           name: "sUSD",
-          value: 1,
+          value: 100,
           checked: false,
         }
       ],

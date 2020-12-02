@@ -221,7 +221,7 @@
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6">you get (max - {{borrowInfo.maxBorrow}})</h2>
-                <b-input type="number" class="is-flex-grow-2" v-model="borrowInfo.getValue" ></b-input>
+                <b-input type="number" class="is-flex-grow-2" v-model="borrowInfo.value" ></b-input>
 
                 <div v-for="(item, index) in borrowInfo.options"
                     :key="index">
@@ -532,7 +532,6 @@ export default {
       borrowInfo: {
         account: 0,
         value: 0,
-        getValue: 0,
         token: '',
         options: config.tokens,
         maxBorrow: 0,
@@ -916,7 +915,7 @@ export default {
       this.borrowInfo.maxBorrow = pool.getMaxBorrow(val, val2);
     },
     borrow(borrowInfo){
-      pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.getValue });
+      pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: borrowInfo.value });
       this.updateResults();
       this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
     },
