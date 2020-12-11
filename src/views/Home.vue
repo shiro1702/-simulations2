@@ -6,7 +6,7 @@
         </cmp-form>
         <b-field label="prices:"
             grouped group-multiline>
-          <div v-for="item in prices" :key="item.name" class="control">
+          <div v-for="item in poolPrices" :key="item.name" class="control">
             <b-taglist attached>
               <b-tag type="is-primary is-light" size="is-medium">{{item.name}}</b-tag>
               <b-tag type="is-primary" size="is-medium">{{item.value}}</b-tag>
@@ -23,7 +23,7 @@
       <div class="column">
         <cmp-accounts-form
             :tokenOptions="[...config.tokens, config.stable]"
-            :pricesFormat="pricesFormat"
+            :pricesFormat="poolPricesFormat"
             title="Аккаунты">
         </cmp-accounts-form>
       </div>
@@ -120,6 +120,10 @@
         <section class="modal-card-body">
           <cmp-form :form="prices" title="Prices">
           </cmp-form>
+          <b-button expanded type="is-primary" outlined
+            class="mt-4"
+            :disabled="JSON.stringify(prices) == JSON.stringify(poolPrices)"
+            @click="setPricesArray(prices), priceModal = false">Изменить</b-button>
         </section>
       </div>
     </b-modal>
@@ -593,16 +597,9 @@ export default {
     'cmp-form': Form,
     'cmp-accounts-form': AccountsForm
   },
-  // watch: {
-  //   form1: {
-  //     handler(val) { 
-  //       console.log(val);
-  //      },
-  //     deep: true
-  //   },
-  // },
   data() {
     return {
+      capital: 0,
       tickDisble: true,
       tokenModal: false,
       priceModal: false,
@@ -723,48 +720,6 @@ export default {
         },
       ],
       table: [],
-      columns: [
-        {
-            field: 'name',
-            label: 'name',
-        },
-        {
-            field: 'value',
-            label: 'value',
-        },
-        {
-            field: 'totalBorrows',
-            label: 'totalBorrows',
-        },
-        {
-            field: 'borrowIndex',
-            label: 'borrowIndex',
-        },
-        {
-            field: 'totalReserves',
-            label: 'totalReserves',
-        },
-        {
-            field: 'price',
-            label: 'price',
-        },
-        {
-            field: 'capital',
-            label: 'capital',
-        },
-        {
-            field: 'weight',
-            label: 'weight',
-        },
-        {
-            field: 'staked',
-            label: 'staked',
-        },
-        {
-            field: 'prevDay',
-            label: 'prevDay',
-        },
-    ],
       credit: [
         {
           name: 'tokens loan',
@@ -855,26 +810,6 @@ export default {
         },
       ],
       prices: [
-        {
-          name: "BTC",
-          value: 10500,
-        },
-        {
-          name: "ETH",
-          value: 350,
-        },
-        {
-          name: "USDT",
-          value: 1,
-        },
-        {
-          name: "EOS",
-          value: 2,
-        },
-        {
-          name: "sUSD",
-          value: 1
-        }
       ],
       history: [
         
@@ -884,12 +819,51 @@ export default {
   computed: {
     ...mapState('accounts', {'accounts': 'items', 'poolAccounts': 'poolAccounts'}),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
-    pricesFormat(){
-      let price = {}
-      this.prices.forEach(item => {
-        price[item.name] = item.value;
-      });
-      return price
+    ...mapState('prices', ['poolPrices']),
+    ...mapGetters('prices', ['poolPricesFormat']),
+    columns(){ 
+      return [
+        {
+            field: 'name',
+            label: 'name',
+        },
+        {
+            field: 'value',
+            label: 'value',
+        },
+        {
+            field: 'totalBorrows',
+            label: 'totalBorrows',
+        },
+        {
+            field: 'borrowIndex',
+            label: 'borrowIndex',
+        },
+        {
+            field: 'totalReserves',
+            label: 'totalReserves',
+        },
+        {
+            field: 'price',
+            label: 'price',
+        },
+        {
+            field: 'capital',
+            label: 'capital' + ` ${this.capital}`,
+        },
+        {
+            field: 'weight',
+            label: 'weight',
+        },
+        {
+            field: 'staked',
+            label: 'staked',
+        },
+        {
+            field: 'prevDay',
+            label: 'prevDay',
+        },
+      ];
     },
     config(){
       let confog = {}
@@ -945,9 +919,17 @@ export default {
       window.pool.createPool(val);
       window.oracle.init(val);
     },
-    pricesFormat(){
-      this.updateResults();
+    priceModal(val){
+      if (val){
+        this.prices = [];
+        this.poolPrices.forEach(item => {      
+          this.prices.push(Object.assign({}, item));
+        })
+      }
     },
+    // pricesFormat(){
+    //   this.updateResults();
+    // },
     history(){
       this.$refs.history.scrollTo({
         top: this.$refs.history.scrollHeight,
@@ -990,32 +972,23 @@ export default {
     },
   },
   methods: {
-    ...mapMutations('accounts', {accountEdit: 'editItem'}),
     ...mapActions('accounts', ['updateAccounts']),
+    ...mapMutations('prices', ['setPrices']),
+    ...mapActions('prices', ['setPricesArray']),
     Create(){
       window.oracle.init(config);
       window.pool.createPool(config);
-      // this.AccountUpdate();
+      this.setPrices(config.prices)
     },
-    // AccountUpdate(){
-    //   console.log(this.accountsChecked);
-    //   this.accountsChecked.forEach((item, index) => {
-    //     let balance = {};
-    //     item.forEach(item2 => {
-    //       balance[item2.name] = item2.value
-    //     })
-    //     window.pool.accounts.issueBalance(index, balance)
-    //     // console.log(window.pool.accounts.get(index));
-    //   })
-    //   // this.updateResults();
-    // },
 
     updateResults(){
-      
-      let getInfo = window.pool.getInfo(this.pricesFormat)
+      let getInfo = window.pool.getInfo(this.poolPricesFormat)
+      console.log('getInfo', getInfo);
+      this.capital = getInfo.capital.toString();
       this.table = [];
       let reserves = getInfo.reserves;
-      this.updateAccounts(this.pricesFormat);
+      this.updateAccounts(this.poolPricesFormat);
+      // this.updatePrices(this.poolPricesFormat);
       
       // тик только при наличии депозита
       const poolDeposit = window.pool._getTokens().filter((t) => !window.pool.reserves.getValue(t).equals(0));
@@ -1110,7 +1083,7 @@ export default {
       this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
     },
     setRepayAccountInfo(accountIndex){
-      let account = window.pool.getInfo(this.pricesFormat).accounts[accountIndex];
+      let account = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex];
       console.log(account.borrows);
       // console.log(account.borrows.value.toString());
       // account

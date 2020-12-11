@@ -1,31 +1,30 @@
 <template>
-  <div class="">
+  <div>
     <h2 class="is-size-4 mb-3">{{title}}</h2>
     <div class="accountsFrom__scroll">
-
-    </div>
-    <div v-for="(item, index) in poolAccounts" 
-        class="mb-4"
-        :key="index"
-        grouped group-multiline>
-      <div>
-        <span>№{{1 + parseInt(index)}} Balance:</span>
-        <b-button 
-            class="ml-3"
-            size="is-small" 
-            icon-left="plus"
-            @click="openEditModal(index)">
-        </b-button>
-      </div>
-      <div class="is-flex is-flex-wrap-wrap">
-        <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-3 mb-3">
-          <b-tooltip :label="item2"
-            position="is-bottom">
-            <b-taglist attached>
-              <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
-              <b-tag type="is-primary" size="is-medium">{{item2.toString().split('.')[0]}}{{item2.toString().split('.')[1]?'.'+item2.toString().split('.')[1].slice(0, 4):''}}</b-tag>
-            </b-taglist>
-          </b-tooltip>
+      <div v-for="(item, index) in poolAccounts" 
+          class="mb-4"
+          :key="index"
+          grouped group-multiline>
+        <div class="mb-2">
+          <span>№{{1 + parseInt(index)}} Balance: <b>{{accountSumm[index]}} </b>USDT</span>
+          <b-button 
+              class="ml-3"
+              size="is-small" 
+              icon-left="plus"
+              @click="openEditModal(index)">
+          </b-button>
+        </div>
+        <div class="is-flex is-flex-wrap-wrap">
+          <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-3 mb-3">
+            <b-tooltip :label="item2"
+              position="is-bottom">
+              <b-taglist attached>
+                <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
+                <b-tag type="is-primary" size="is-medium">{{item2.toString().split('.')[0]}}{{item2.toString().split('.')[1]?'.'+item2.toString().split('.')[1].slice(0, 4):''}}</b-tag>
+              </b-taglist>
+            </b-tooltip>
+          </div>
         </div>
       </div>
     </div>
@@ -76,7 +75,7 @@ export default {
   },
   computed: {
     ...mapState('accounts', ['poolAccounts']),
-    ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
+    ...mapGetters('accounts', {'accountsChecked': 'itemsChecked', 'accountSumm':'accountSumm'}),
   },
   methods: {
     openEditModal(index){
@@ -94,5 +93,9 @@ export default {
   .accountsFrom
     &__scroll
       overflow: scroll
+      overflow-x: no-scroll
+      overflow-y: scroll
+      min-height: 100%
+      max-height: 500px
 
 </style>

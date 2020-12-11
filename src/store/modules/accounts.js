@@ -35,14 +35,19 @@ export default {
         ]
 	},
 	getters: {
-        itemsChecked: state => {
-            return state.items.map(item => {
-                // let nItem = Object.assign({}, item, {});
-                return item.filter( item2 => {
-                    return item2.checked;
-                });
+        accountSumm: (state, getters, rootState, rootGetters) => {
+            let poolAccountsSumm = [];
+            state.poolAccounts.forEach(item => {
+                let summ = 0;
+                for (const key in item.balance) {
+                    if (Object.prototype.hasOwnProperty.call(item.balance, key) && rootGetters['prices/poolPricesFormat'][key]) {
+                        summ+= parseFloat(item.balance[key]) * rootGetters['prices/poolPricesFormat'][key]
+                    }
+                }
+                poolAccountsSumm.push(summ)
             })
-        }
+            return poolAccountsSumm;
+        },
 	},
 	mutations: {
 		// создание контакта

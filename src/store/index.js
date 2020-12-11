@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 import accounts from './modules/accounts.js'
+import prices from './modules/prices.js'
+
 export default new Vuex.Store({
   state: {
   },
@@ -12,5 +14,6 @@ export default new Vuex.Store({
   },
   modules: {
     accounts,
+    prices,
   }
 })
