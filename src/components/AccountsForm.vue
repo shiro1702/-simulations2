@@ -7,7 +7,7 @@
           :key="index"
           grouped group-multiline>
         <div class="mb-2">
-          <span>№{{1 + parseInt(index)}} Balance: <b>{{accountSumm[index]}} </b>USDT</span>
+          <span>№{{1 + parseInt(index)}} Balance: <b>{{accountSumm[index]}} </b>USD</span>
           <b-button 
               class="ml-3"
               size="is-small" 

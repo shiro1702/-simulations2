@@ -1106,14 +1106,15 @@ export default {
       this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
     },
     setLiqidateOptions1(accountId1){
-      // this.liquidateInfo.options = Object.keys(pool.accounts.get(accountId).deposits)
-     this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows)
-      
+      // this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).deposits)
+      //  this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows)
+      this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).deposits)
+    // this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
     },
     setLiqidateOptions(accountId1, accountId2){
-// console.log(accountId1,accountId2 );
       // this.liquidateInfo.options = Object.keys(pool.accounts.get(accountId).deposits)
-      this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).deposits).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
+      // this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).deposits).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
+      this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
       console.log(this.liquidateInfo.options);
     },
     liquidate(liquidateInfo){
