@@ -146,7 +146,7 @@
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6 mb-3">token</h2>
-                <b-input type="number" class="is-flex-grow-2" v-model="createDepositInfo.value" ></b-input>
+                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="createDepositInfo.value" ></b-input>
                 <template v-if="poolAccounts[createDepositInfo.account]">
                   <div v-for="(item, index) in poolAccounts[createDepositInfo.account].balance"
                       :key="index">
@@ -191,7 +191,7 @@
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6 mb-3">token</h2>
-                <b-input type="number" class="is-flex-grow-2" v-model="returnDepositInfo.value" ></b-input>
+                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="returnDepositInfo.value" ></b-input>
                 <div v-for="(item, index) in returnDepositInfo.options"
                     :key="index">
                   <b-radio 
@@ -206,6 +206,7 @@
                 <h2 class="is-size-6 mb-3">Вывести {{returnDepositInfo.tokenInput}}<br> 
                 {{returnDepositInfo.token}} от аккаунта №{{returnDepositInfo.account+1}} на личный баланс</h2>
                 <b-button expanded type="is-primary" outlined
+                  :disabled="poolAccounts.length == 0 || returnDepositInfo.value == '0' || returnDepositInfo.value == ''"
                   @click="returnDeposit(returnDepositInfo), returnDepositModal = false">Подтвердить</b-button>
               </div>
             </div>
@@ -233,7 +234,7 @@
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6 mb-3">you get (max - {{borrowInfo.maxBorrow}})</h2>
-                <b-input type="number" class="is-flex-grow-2" v-model="borrowInfo.value" ></b-input>
+                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="borrowInfo.value" ></b-input>
 
                 <div v-for="(item, index) in borrowInfo.options"
                     :key="index">
@@ -281,7 +282,7 @@
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6 mb-3">you get (max - {{mintInfo.maxMint}})</h2>
-                <b-input type="number" class="is-flex-grow-2" v-model="mintInfo.value" ></b-input>
+                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
 
                 <div v-for="(item, index) in mintInfo.options"
                     :key="index">
@@ -289,7 +290,6 @@
                       v-model="mintInfo.token"
                       name="token1"
                       :native-value="item"
-                      
                       @click.native="setMaxToMint(mintInfo.account, item)">
                       {{item}}
                   </b-radio>
@@ -299,6 +299,7 @@
                 <h2 class="is-size-6 mb-3">
                  Выпустить для аккаунта №{{mintInfo.account+1}} {{mintInfo.token}} {{mintInfo.value}} </h2>
                 <b-button expanded type="is-primary" outlined
+                  :disabled="poolAccounts.length == 0 || mintInfo.value == '' || parseFloat(mintInfo.value) == 0 || parseFloat(mintInfo.maxMint) < parseFloat(mintInfo.value)"
                  @click="mint(mintInfo), mintModal = false">Подтвердить</b-button>
               </div>
             </div>
@@ -330,7 +331,7 @@
 
                   <div class="column is-6">
                     <h2 class="is-size-6 mb-3">you pay</h2>
-                    <b-input type="number" class="is-flex-grow-2" v-model="tradeInfo.value" @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"></b-input>
+                    <b-input type="number" class="is-flex-grow-2 mb-3" v-model="tradeInfo.value" @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"></b-input>
                     <template v-if="poolAccounts[tradeInfo.account]">
                       <div v-for="(item, index) in poolAccounts[tradeInfo.account].balance"
                           :key="index">
@@ -394,7 +395,7 @@
               </div>
               <div class="column is-4">
                 <h2 class="is-size-6 mb-3">token</h2>
-                <b-input type="text" class="is-flex-grow-2" v-model="repayInfo.value" ></b-input>
+                <b-input type="text" class="is-flex-grow-2 mb-3" v-model="repayInfo.value" ></b-input>
                 <div v-for="(item, index) in repayInfo.borrows"
                     :key="index">
                   <b-radio 
@@ -407,16 +408,17 @@
                 </div>
               </div>
               <div class="column is-4">
-                <h2 class="is-size-6">loan: 1200 ETH for 12 BTC</h2>
-                <h2 class="is-size-6">срок: 12 мес</h2>
-                <h2 class="is-size-6">к возврату: {{repayInfo.sumBorrowPlusEffects }} ETH</h2>
-                <h2 class="is-size-6">обеспечение: {{repayInfo.sumCollateral}} BTC</h2>
-                <h3 class="is-size-8">
+                <h2 class="is-size-6 mb-1">loan: 1200 ETH for 12 BTC</h2>
+                <h2 class="is-size-6 mb-1">срок: 12 мес</h2>
+                <h2 class="is-size-6 mb-1">к возврату: {{repayInfo.sumBorrowPlusEffects }} ETH</h2>
+                <h2 class="is-size-6 mb-1">обеспечение: {{repayInfo.sumCollateral}} BTC</h2>
+                <h3 class="is-size-8 mb-3">
                   Вернуть займ аккаунта №{{repayInfo.account+1}} в размере 1300 ЕTH и вернуть 13 BTC
                   {{repayInfo.payValue}} {{repayInfo.token}} <br>
                 </h3>
                 <b-button expanded type="is-primary" outlined
-                 @click="repay(repayInfo), repayModal = false">Подтвердить</b-button>
+                  :disabled="poolAccounts.length == 0 || repayInfo.borrows.length == 0 || repayInfo.token == '' || repayInfo.value == '' || parseFloat(repayInfo.value) == 0"
+                  @click="repay(repayInfo), repayModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -445,7 +447,7 @@
                 
                 <h2 class="is-size-6 mb-3">token max({{liquidateInfo.maxLiquidate}})</h2>
 
-                <b-input type="text" class="is-flex-grow-2" v-model="liquidateInfo.value" ></b-input>
+                <b-input type="text" class="is-flex-grow-2 mb-3" v-model="liquidateInfo.value" ></b-input>
                 <div v-for="(item, index) in liquidateInfo.options1"
                     :key="index">
                   <b-radio 
@@ -489,9 +491,9 @@
                 <h3 class="is-size-8 mb-3">
                   Ликвидировать займ аккаунта №{{liquidateInfo.account+1}} 
                   и перевести {{liquidateInfo.token}} в пул
-                  
                 </h3>
                 <b-button expanded type="is-primary" outlined
+                  :disabled="poolAccounts.length == 0 || liquidateInfo.token == '' || liquidateInfo.token2 == '' || liquidateInfo.options1.length == 0 || liquidateInfo.options == 0 || liquidateInfo.value == '' || parseFloat(liquidateInfo.value) == 0"
                  @click="liquidate(liquidateInfo), liquidateModal = false">Подтвердить</b-button>
               </div>
             </div>
@@ -521,7 +523,7 @@
                 
                 <h2 class="is-size-6 mb-3">token max({{liquidateStableInfo.maxLiquidate}})</h2>
 
-                <b-input type="text" class="is-flex-grow-2" v-model="liquidateStableInfo.value" ></b-input>
+                <b-input type="text" class="is-flex-grow-2 mb-3" v-model="liquidateStableInfo.value" ></b-input>
                 <div v-for="(item, index) in liquidateStableInfo.options1"
                     :key="index">
                   <b-radio 
@@ -567,7 +569,7 @@
                   и перевести {{liquidateStableInfo.token}} в пул
                 </h3>
                 <b-button expanded type="is-primary" outlined
-                  :disabled="liquidateStableInfo.value == ''"
+                  :disabled="poolAccounts.length == 0 || liquidateStableInfo.token == '' || liquidateStableInfo.token2 == '' || liquidateStableInfo.options1.length == 0 || liquidateStableInfo.options == 0 || liquidateStableInfo.value == '' || parseFloat(liquidateStableInfo.value) == 0"
                   @click="liquidateS(liquidateStableInfo), liquidateModal = false">Подтвердить</b-button>
               </div>
             </div>
@@ -1075,9 +1077,17 @@ export default {
 
     },
     repay(repayInfo){
-      window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
+      const test = window.pool.burn(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
       this.updateResults();
-      this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
+      if (test){
+        this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
+      } else {
+        this.$buefy.toast.open({
+          message: `Ошибка! Возврат займа не прошёл!`,
+          type: 'is-danger'
+        })
+        this.history.push(`Не удачная попытка вернуть займ аккаунта №${repayInfo.account + 1} на сумму ${repayInfo.token} ${repayInfo.value}`);
+      }
     },
     setRepayAccountInfo(accountIndex){
       let account = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex];
@@ -1124,12 +1134,14 @@ export default {
       this.liquidateStableInfo.token2 = this.liquidateStableInfo.options[0]
     },
     liquidateS(liquidateStableInfo){
-      console.log(liquidateStableInfo);
-      console.log(liquidateStableInfo.account, liquidateStableInfo.token, parseFloat(liquidateStableInfo.value), liquidateStableInfo.token2, liquidateStableInfo.account2);
       const test = window.pool.liquidateStable(liquidateStableInfo.account, liquidateStableInfo.token, parseFloat(liquidateStableInfo.value), liquidateStableInfo.token2, liquidateStableInfo.account2);
       if (test) {
         this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
       } else {
+        this.$buefy.toast.open({
+          message: `Ошибка! Стейбл коины не ликвидированы!`,
+          type: 'is-danger'
+        })
         this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} НЕ ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
       }
       this.updateResults();
