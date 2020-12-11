@@ -4,7 +4,7 @@
     <div class="accountsFrom__scroll">
       <div v-for="(item, index) in poolAccounts" 
           class="mb-4"
-          :key="index"
+          :key="'poolAccounts'+index"
           grouped group-multiline>
         <div class="mb-2">
           <span>№{{1 + parseInt(index)}} Balance: <b>{{accountSumm[index]}} </b>USD</span>
@@ -16,8 +16,8 @@
           </b-button>
         </div>
         <div class="is-flex is-flex-wrap-wrap">
-          <div v-for="(item2, key) in item.balance" :key="item2.name" class="control mr-3 mb-3">
-            <b-tooltip :label="item2"
+          <div v-for="(item2, key) in item.balance" :key="'balance'+index+key" class="control mr-3 mb-3">
+            <b-tooltip :label="item2.toString()"
               position="is-bottom">
               <b-taglist attached>
                 <b-tag type="is-primary is-light" size="is-medium">{{key}}</b-tag>
