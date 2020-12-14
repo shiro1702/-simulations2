@@ -139,7 +139,8 @@
                   <b-radio 
                       v-model="createDepositInfo.account"
                       name="account"
-                      :native-value="parseInt(index)">
+                      :native-value="parseInt(index)"
+                      @click.native="setCreateDepositOptions(parseInt(index))">
                       №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
@@ -153,7 +154,8 @@
                     <b-radio 
                         v-model="createDepositInfo.token"
                         name="token"
-                        :native-value="index">
+                        :native-value="index"
+                        @click.native="setCreateDepositValue(index)">
                         {{index}} {{item}}
                     </b-radio>
                   </div>
@@ -226,7 +228,7 @@
                       v-model="borrowInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setReturnOptionToBorrow(parseInt(index), borrowInfo.token)"
+                      @click.native="setReturnOptions(), setReturnMaxBorrow(parseInt(index), borrowInfo.token)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -242,8 +244,7 @@
                       v-model="borrowInfo.token"
                       name="token1"
                       :native-value="item"
-                      
-                      @click.native="setReturnOptionToBorrow(borrowInfo.account, item)">
+                      @click.native="setReturnMaxBorrow(borrowInfo.account, item)">
                       {{item}}
                   </b-radio>
                 </div>
@@ -274,7 +275,7 @@
                       v-model="mintInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setMaxToMint(parseInt(index), mintInfo.token)"
+                      @click.native="setMaxToMint(parseInt(index), mintInfo.token), setMintOptions()"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -319,7 +320,7 @@
                       v-model="tradeInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setTradeResult(index, tradeInfo.token, tradeInfo.token2, tradeInfo.value)"
+                      @click.native="setTradeOptions(parseInt(index)), setTradeValue(parseInt(index), tradeInfo.token), setTradeResult(parseInt(index), tradeInfo.token, tradeInfo.token2, tradeInfo.value)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -339,7 +340,7 @@
                             v-model="tradeInfo.token"
                             name="token1"
                             :native-value="index"
-                            @click.native="setTradeResult(tradeInfo.account, index, tradeInfo.token2, tradeInfo.value)">
+                            @click.native="setTradeValue(tradeInfo.account, index), setTradeResult(tradeInfo.account, index, tradeInfo.token2, tradeInfo.value)">
                             {{index}} {{item}}
                         </b-radio>
                       </div>
@@ -356,7 +357,7 @@
                           v-model="tradeInfo.token2"
                           name="token2"
                           :native-value="item"
-                          @click.native="setTradeResult(tradeInfo.account, tradeInfo.token, index,  tradeInfo.value)">
+                          @click.native="setTradeResult(tradeInfo.account, tradeInfo.token, item,  tradeInfo.value)">
                           {{item}}
                       </b-radio>
                     </div>
@@ -935,19 +936,32 @@ export default {
         behavior: "smooth"
       });
     },
+    createDepositModal(val){
+      if (val){
+        this.setCreateDepositOptions(0);
+      }
+    },
     returnDepositModal(val){
       if (val){
         this.setReturnOptionToDeposit(this.returnDepositInfo.account);
       }
     },
+    tradeModal(val){
+      if (val){
+        this.setTradeOptions(0);
+        this.setTradeValue(this.tradeInfo.account, this.tradeInfo.token)
+      }
+    },
     borrowModal(val){
       if (val){
-        this.setReturnOptionToBorrow(this.borrowInfo.account, this.borrowInfo.token);
+        this.setReturnOptions();
+        this.setReturnMaxBorrow(this.borrowInfo.account, this.borrowInfo.token);
       }
     },
     mintModal(val){
       if (val){
         this.setMaxToMint(parseInt(this.mintInfo.account), this.mintInfo.token);
+        this.setMintOptions();
       }
     },
     repayModal(val){
@@ -1016,6 +1030,20 @@ export default {
       this.updateResults();
       this.history.push('pool tick');
     },
+    setCreateDepositOptions(val){
+      const balance = this.poolAccounts[val].balance;
+      let test = true;
+      for (let key in balance) {
+        if (test){
+          this.createDepositInfo.token = key;
+          this.createDepositInfo.value = balance[key]
+        }
+        test = false;
+      }
+    },
+    setCreateDepositValue(val){
+      this.createDepositInfo.value = this.poolAccounts[this.createDepositInfo.account].balance[val];
+    },
     createDeposit(createDepositInfo){
       window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: parseFloat(createDepositInfo.value) });
       this.updateResults();
@@ -1024,17 +1052,19 @@ export default {
     },
     setReturnOptionToDeposit(val){
       console.log('accounts', window.pool.accounts.get(val));
-      let balance= window.pool.accounts.get(val).balance
+      let deposits= window.pool.accounts.get(val).deposits;
+      
       // console.log(balance);
       let options = []
-      for (let key in balance) {
+      for (let key in deposits) {
         options.push({
           name: key,
-          value: balance[key].toString()
+          value: deposits[key].value.toString()
         })
       }
       this.$set( this.returnDepositInfo, 'options', options )
-      // console.log(this.returnDepositInfo.options);
+      this.$set( this.returnDepositInfo, 'token', options[0].name )
+      this.$set( this.returnDepositInfo, 'value', options[0].value )
     },
     returnDeposit(returnDepositInfo){
       // console.log(window.pool.redeem(accountId1, "BTC", 100));
@@ -1054,11 +1084,15 @@ export default {
         this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
       }
     },
-    setReturnOptionToBorrow(val, val2){
+    setReturnOptions(){
+      this.borrowInfo.token = this.borrowInfo.options[0];
+    },
+    setReturnMaxBorrow(val, val2){
       // console.log(val);
       // maxBorrow
-      console.log('getMaxBorrow', window.pool.getMaxBorrow(val, val2).toString());
+      // console.log('getMaxBorrow', window.pool.getMaxBorrow(val, val2).toString());
       this.borrowInfo.maxBorrow = window.pool.getMaxBorrow(val, val2).toString();
+      this.borrowInfo.value = this.borrowInfo.maxBorrow;
     },
     borrow(borrowInfo){
       const test = window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: parseFloat(borrowInfo.value) });
@@ -1157,15 +1191,33 @@ export default {
     //   this.liquidateInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
     // },
     setMaxToMint(accountId, token){
-      console.log('setMaxToMint');
+      // console.log('setMaxToMint');
       this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token);
+      this.mintInfo.value = this.mintInfo.maxMint;
+    },
+    setMintOptions(){
+      this.mintInfo.token = this.mintInfo.options[0];
     },
     mint(mintInfo){
       window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: parseFloat(mintInfo.value) });
       this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
       this.updateResults();
     },
-    setTradeResult(account,token, token2, value ){
+    setTradeValue(account, token){
+      this.tradeInfo.value = this.poolAccounts[account].balance[token];
+    },
+    setTradeOptions(account){
+      // this.tradeInfo.token = poolAccounts[tradeInfo.account].balance;
+      const balance = this.poolAccounts[account].balance;
+      let test = true;
+      for (let key in balance) {
+        if (test){
+          this.tradeInfo.token = key;
+        }
+        test = false;
+      }
+    },
+    setTradeResult(account, token, token2, value ){
       console.log(account, [`${token}/${token2}`, parseFloat(value)]);
       const trade1 = window.pool.tradePool(account, [`${token}/${token2}`, parseFloat(value)], 1);
       console.log(trade1);
