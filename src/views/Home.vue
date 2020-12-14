@@ -388,7 +388,7 @@
                       v-model="repayInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setRepayAccountInfo(parseInt(index))"
+                      @click.native="setRepayAccountInfo(parseInt(index)), setRepayValue(parseInt(index), repayInfo.token)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -403,6 +403,7 @@
                       v-model="repayInfo.token"
                       name="token"
                       :native-value="item.name"
+                      @click.native="setRepayValue(repayInfo.account, item.name)"
                       >
                       {{item.name}} - {{item.value}}
                   </b-radio>
@@ -590,7 +591,6 @@ import config from '@/assets/NeuronES6/config.js'
 import Form from '@/components/Form.vue'
 import AccountsForm from '@/components/AccountsForm.vue'
 
-console.log();
 export default {
   name: 'Home',
   components: {
@@ -960,13 +960,14 @@ export default {
     },
     mintModal(val){
       if (val){
-        this.setMaxToMint(parseInt(this.mintInfo.account), this.mintInfo.token);
         this.setMintOptions();
+        this.setMaxToMint(parseInt(this.mintInfo.account), this.mintInfo.token);
       }
     },
     repayModal(val){
       if (val){
         this.setRepayAccountInfo(this.repayInfo.account);
+        this.setRepayValue(this.repayInfo.account, this.repayInfo.token);
       }
     },
     liquidateModal(val){
@@ -1023,7 +1024,7 @@ export default {
           this.table.push(element)
         }
       }
-      console.log( this.table );
+      // console.log( this.table );
     },
     nextTick(){
       window.pool.tick(1);
@@ -1051,7 +1052,7 @@ export default {
       this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
     },
     setReturnOptionToDeposit(val){
-      console.log('accounts', window.pool.accounts.get(val));
+      // console.log('accounts', window.pool.accounts.get(val));
       let deposits= window.pool.accounts.get(val).deposits;
       
       // console.log(balance);
@@ -1068,9 +1069,9 @@ export default {
     },
     returnDeposit(returnDepositInfo){
       // console.log(window.pool.redeem(accountId1, "BTC", 100));
-      console.log('account', returnDepositInfo.account);
-      console.log('token', returnDepositInfo.token);
-      console.log('value', returnDepositInfo.value);
+      // console.log('account', returnDepositInfo.account);
+      // console.log('token', returnDepositInfo.token);
+      // console.log('value', returnDepositInfo.value);
       const test = window.pool.redeem(returnDepositInfo.account, returnDepositInfo.token, parseFloat(returnDepositInfo.value) );
       this.updateResults();
       if (test.error) {
@@ -1080,7 +1081,7 @@ export default {
         })
         this.history.push(`ошибка возврата депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
       } else {
-        console.log('test', test);
+        // console.log('test', test);
         this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
       }
     },
@@ -1111,8 +1112,8 @@ export default {
 
     },
     repay(repayInfo){
-      const test = window.pool.burn(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
-      this.updateResults();
+      const test = window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
+
       if (test){
         this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
       } else {
@@ -1121,11 +1122,12 @@ export default {
           type: 'is-danger'
         })
         this.history.push(`Не удачная попытка вернуть займ аккаунта №${repayInfo.account + 1} на сумму ${repayInfo.token} ${repayInfo.value}`);
-      }
+      }      
+      this.updateResults();
     },
     setRepayAccountInfo(accountIndex){
       let account = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex];
-      console.log(account.borrows);
+      // console.log(account.borrows);
       // console.log(account.borrows.value.toString());
       // account
       this.repayInfo.borrows = []
@@ -1137,20 +1139,26 @@ export default {
           })
         }
       }
-      
+      this.repayInfo.token = this.repayInfo.borrows[0].name;
       // this.repayInfo.depositsToken = account.deposits
       // this.repayInfo.deposits = account.deposits.toString();
       // this.repayInfo.sumCollateral = account.sumCollateral.toString();
       // this.repayInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
     },
+    setRepayValue(account, token){
+      this.repayInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value;
+    },
     setMaxLiquidate(accountId, token){
       this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
+      this.liquidateInfo.value = this.liquidateInfo.maxLiquidate;
     },
     setLiqidateOptions1(accountId1, accountId2){
-      this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x))
+      this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x));
+      this.liquidateInfo.token = this.liquidateInfo.options1[0];
     },
     setLiqidateOptions(accountId1){
       this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).deposits)
+      this.liquidateInfo.token2 = this.liquidateInfo.options[0];
     },
     liquidate(liquidateInfo){
       window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);
@@ -1218,16 +1226,16 @@ export default {
       }
     },
     setTradeResult(account, token, token2, value ){
-      console.log(account, [`${token}/${token2}`, parseFloat(value)]);
+      // console.log(account, [`${token}/${token2}`, parseFloat(value)]);
       const trade1 = window.pool.tradePool(account, [`${token}/${token2}`, parseFloat(value)], 1);
-      console.log(trade1);
+      // console.log(trade1);
       this.tradeInfo.value2 = trade1.value.toString()
     },
     trade(tradeInfo){
-      console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
+      // console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       this.updateResults();
-      console.log(trade1);
+      // console.log(trade1);
       this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value.toString()}`)
       this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value.toString()})`);
     },

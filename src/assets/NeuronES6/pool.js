@@ -505,6 +505,7 @@ class NeuronPool {
     this.accounts.subBalance(borrower, name, actualRepayAmount);
     reserve.value = reserve.value.plus(actualRepayAmount);
     reserve.totalBorrows = totalBorrowsNew;
+    return true;
   };
 
   liquidate = (borrower, name, repayAmount, collateralName, payer) => {
