@@ -83,6 +83,11 @@
 
           <div class="column is-half">
             <b-button expanded type="is-primary" outlined
+            @click="repayStableModal = true">Вернуть стейбл коины </b-button>
+          </div>
+
+          <div class="column is-half">
+            <b-button expanded type="is-primary" outlined
             @click="liquidateStableModal = true">Ликвидация стейбл</b-button>
           </div>
 <!--           
@@ -410,12 +415,10 @@
                 </div>
               </div>
               <div class="column is-4">
-                <h2 class="is-size-6 mb-1">loan: 1200 ETH for 12 BTC</h2>
-                <h2 class="is-size-6 mb-1">срок: 12 мес</h2>
                 <h2 class="is-size-6 mb-1">к возврату: {{repayInfo.sumBorrowPlusEffects }} ETH</h2>
                 <h2 class="is-size-6 mb-1">обеспечение: {{repayInfo.sumCollateral}} BTC</h2>
                 <h3 class="is-size-8 mb-3">
-                  Вернуть займ аккаунта №{{repayInfo.account+1}} в размере 1300 ЕTH и вернуть 13 BTC
+                  Вернуть займ аккаунта №{{repayInfo.account+1}} в размере
                   {{repayInfo.payValue}} {{repayInfo.token}} <br>
                 </h3>
                 <b-button expanded type="is-primary" outlined
@@ -497,6 +500,55 @@
                 <b-button expanded type="is-primary" outlined
                   :disabled="poolAccounts.length == 0 || liquidateInfo.token == '' || liquidateInfo.token2 == '' || liquidateInfo.options1.length == 0 || liquidateInfo.options == 0 || liquidateInfo.value == '' || parseFloat(liquidateInfo.value) == 0"
                  @click="liquidate(liquidateInfo), liquidateModal = false">Подтвердить</b-button>
+              </div>
+            </div>
+        </section>
+      </div>
+    </b-modal>
+    <b-modal v-model="repayStableModal" :width="640">
+      <div class="modal-card modal-content-height" style="width: auto">
+        <section class="modal-card-body">
+          <h2 class="is-size-4 mb-3">Вернуть стейбл коины</h2>
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <h2 class="is-size-6 mb-3">account</h2>
+                <div v-for="(item, index) in poolAccounts"
+                    :key="index">
+                  <b-radio 
+                      v-model="repayStableInfo.account"
+                      name="account"
+                      :native-value="parseInt(index)"
+                      @click.native="setRepayStableAccountInfo(parseInt(index)), setRepayStableValue(parseInt(index), repayStableInfo.token)"
+                      >
+                      №{{parseInt(index)+1}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-4">
+                <h2 class="is-size-6 mb-3">token</h2>
+                <b-input type="text" class="is-flex-grow-2 mb-3" v-model="repayStableInfo.value" ></b-input>
+                <div v-for="(item, index) in repayStableInfo.borrows"
+                    :key="index">
+                  <b-radio 
+                      v-model="repayStableInfo.token"
+                      name="token"
+                      :native-value="item.name"
+                      @click.native="setRepayStableValue(repayStableInfo.account, item.name)"
+                      >
+                      {{item.name}} - {{item.value}}
+                  </b-radio>
+                </div>
+              </div>
+              <div class="column is-4">
+                <h2 class="is-size-6 mb-1">к возврату: {{repayStableInfo.sumBorrowPlusEffects }} ETH</h2>
+                <h2 class="is-size-6 mb-1">обеспечение: {{repayStableInfo.sumCollateral}} BTC</h2>
+                <h3 class="is-size-8 mb-3">
+                  Вернуть стейбл коины аккаунта №{{repayStableInfo.account+1}}
+                  {{repayStableInfo.payValue}} {{repayStableInfo.token}} <br>
+                </h3>
+                <b-button expanded type="is-primary" outlined
+                  :disabled="poolAccounts.length == 0 || repayStableInfo.borrows.length == 0 || repayStableInfo.token == '' || repayStableInfo.value == '' || parseFloat(repayStableInfo.value) == 0"
+                  @click="repayStable(repayStableInfo), repayStableModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -664,6 +716,17 @@ export default {
         borrows: 0,
         token: '',
         token2: '',
+      },
+      repayStableModal: false,
+      repayStableInfo: {
+        account: 0,
+        value: 0,
+        getValue: 0,
+        borrows: [],
+        token: '',
+        depositsToken: '',
+        sumCollateral: 0,
+        sumBorrowPlusEffects: 0,
       },
       liquidateStableModal: false,
       liquidateStableInfo: {
@@ -977,6 +1040,12 @@ export default {
         this.setLiqidateOptions(this.liquidateInfo.account)
       }
     },
+    repayStableModal(val){
+      if (val){
+        this.setRepayStableAccountInfo(this.repayStableInfo.account);
+        this.setRepayStableValue(this.repayStableInfo.account, this.repayStableInfo.token);
+      }
+    },
     liquidateStableModal(val){
       if (val){
         // this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
@@ -1147,6 +1216,41 @@ export default {
     },
     setRepayValue(account, token){
       this.repayInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value;
+    },
+    setRepayStableAccountInfo(accountIndex){
+      let accountBorrows = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex].borrows
+      let accountBorrowsKeys = Object.keys(accountBorrows).filter(x => window.pool.config.stable.includes(x))
+      console.log(accountBorrows);
+      console.log(accountBorrowsKeys);
+      // Object.keys(window.pool.accounts.get(accountIndex).balance).filter(x => window.pool.config.stable.includes(x))
+      // console.log(account.borrows);
+      this.repayStableInfo.borrows = []
+      accountBorrowsKeys.forEach(key => {
+        if (Object.prototype.hasOwnProperty.call(accountBorrows, key)) {
+          this.repayStableInfo.borrows.push({
+            name: key,
+            value: accountBorrows[key].value?accountBorrows[key].value.toString(): '',
+          })
+        }
+      })
+      this.repayStableInfo.token = this.repayStableInfo.borrows[0].name;
+      console.log(this.repayStableInfo.borrows );
+    },
+    setRepayStableValue(account, token){
+      this.repayStableInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value;
+    },
+    repayStable(repayStableInfo){
+      const test = window.pool.burn(repayStableInfo.account, repayStableInfo.token, parseFloat(repayStableInfo.value));
+      if (test){
+        this.history.push(`аккаунт №${repayStableInfo.account + 1} вернул стейбл коины на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
+      } else {
+        this.$buefy.toast.open({
+          message: `Ошибка! Возврат стейбл коинов не прошёл!`,
+          type: 'is-danger'
+        })
+        this.history.push(`Не удачная попытка вернуть стейбл коины аккаунта №${repayStableInfo.account + 1} на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
+      }      
+      this.updateResults();
     },
     setMaxLiquidate(accountId, token){
       this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
