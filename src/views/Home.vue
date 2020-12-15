@@ -131,7 +131,7 @@
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Сделать депозит</h2>
             <div class="columns is-multiline">
-              <div class="column is-4">
+              <div class="column is-2">
                 <h2 class="is-size-6 mb-3">account</h2>
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
@@ -144,7 +144,7 @@
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">token</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="createDepositInfo.value" ></b-input>
                 <template v-if="poolAccounts[createDepositInfo.account]">
@@ -155,12 +155,16 @@
                         name="token"
                         :native-value="index"
                         @click.native="setCreateDepositValue(index)">
-                        {{index}} {{item}}
+                        {{index}} 
+                        <b-tooltip :label="item.toString()"
+                          position="is-bottom">
+                          {{item.toString().split('.')[0]}}{{item.toString().split('.')[1]?'.'+item.toString().split('.')[1].slice(0, 4):''}}
+                        </b-tooltip>
                     </b-radio>
                   </div>
                 </template>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">Внести {{createDepositInfo.tokenInput}}<br> 
                 {{createDepositInfo.token}} от аккаунта №{{createDepositInfo.account+1}} в депозит</h2>
                 <b-button expanded type="is-primary" outlined
@@ -176,7 +180,7 @@
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Вернуть депозит</h2>
             <div class="columns is-multiline">
-              <div class="column is-4">
+              <div class="column is-2">
                 <h2 class="is-size-6 mb-3">account</h2>
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
@@ -190,7 +194,7 @@
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">xToken</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="returnDepositInfo.value" ></b-input>
                 <div v-for="(item, index) in returnDepositInfo.options"
@@ -199,11 +203,15 @@
                       v-model="returnDepositInfo.token"
                       name="token"
                       :native-value="item.name">
-                      {{item.name}} {{item.value}}
+                      {{item.name}}
+                      <b-tooltip :label="item.value.toString()"
+                        position="is-bottom">
+                        {{item.value.toString().split('.')[0]}}{{item.value.toString().split('.')[1]?'.'+item.value.toString().split('.')[1].slice(0, 4):''}}
+                      </b-tooltip>
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">Вывести {{returnDepositInfo.tokenInput}}<br> 
                 {{returnDepositInfo.token}} от аккаунта №{{returnDepositInfo.account+1}} на личный баланс</h2>
                 <b-button expanded type="is-primary" outlined
@@ -234,7 +242,12 @@
                 </div>
               </div>
               <div class="column is-4">
-                <h2 class="is-size-6 mb-3">you get (max - {{borrowInfo.maxBorrow}})</h2>
+                <h2 class="is-size-6 mb-3">you get ( max -
+                  <b-tooltip :label="borrowInfo.maxBorrow.toString()"
+                    position="is-bottom">
+                    {{borrowInfo.maxBorrow.toString().split('.')[0]}}{{borrowInfo.maxBorrow.toString().split('.')[1]?'.'+borrowInfo.maxBorrow.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip>)
+                </h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="borrowInfo.value" ></b-input>
 
                 <div v-for="(item, index) in borrowInfo.options"
@@ -266,7 +279,7 @@
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Выпуск стейблкоинов</h2>
             <div class="columns is-multiline">
-              <div class="column is-4">
+              <div class="column is-2">
                 <h2 class="is-size-6 mb-3">account</h2>
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
@@ -280,8 +293,12 @@
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
-                <h2 class="is-size-6 mb-3">you get (max - {{mintInfo.maxMint}})</h2>
+              <div class="column is-5">
+                <h2 class="is-size-6 mb-3">you get (max - 
+                  <b-tooltip :label="mintInfo.maxMint.toString()"
+                    position="is-bottom">
+                    {{mintInfo.maxMint.toString().split('.')[0]}}{{mintInfo.maxMint.toString().split('.')[1]?'.'+mintInfo.maxMint.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip>)</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
 
                 <div v-for="(item, index) in mintInfo.options"
@@ -295,9 +312,13 @@
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">
-                 Выпустить для аккаунта №{{mintInfo.account+1}} {{mintInfo.token}} {{mintInfo.value}} </h2>
+                 Выпустить для аккаунта №{{mintInfo.account+1}} {{mintInfo.token}}
+                    <b-tooltip :label="mintInfo.value.toString()"
+                      position="is-bottom">
+                      {{mintInfo.value.toString().split('.')[0]}}{{mintInfo.value.toString().split('.')[1]?'.'+mintInfo.value.toString().split('.')[1].slice(0, 4):''}}
+                    </b-tooltip> </h2>
                 <b-button expanded type="is-primary" outlined
                   :disabled="poolAccounts.length == 0 || mintInfo.value == '' || parseFloat(mintInfo.value) == 0 || parseFloat(mintInfo.maxMint) < parseFloat(mintInfo.value)"
                  @click="mint(mintInfo), mintModal = false">Подтвердить</b-button>
@@ -311,7 +332,7 @@
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Обмен</h2>
             <div class="columns is-multiline">
-              <div class="column is-3">
+              <div class="column is-2">
                 <h2 class="is-size-6 mb-3">account</h2>
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
@@ -329,7 +350,7 @@
 
                 <div class="columns">
 
-                  <div class="column is-6">
+                  <div class="column is-8">
                     <h2 class="is-size-6 mb-3">you pay</h2>
                     <b-input type="number" class="is-flex-grow-2 mb-3" v-model="tradeInfo.value" @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"></b-input>
                     <template v-if="poolAccounts[tradeInfo.account]">
@@ -340,15 +361,24 @@
                             name="token1"
                             :native-value="index"
                             @click.native="setTradeValue(tradeInfo.account, index), setTradeResult(tradeInfo.account, index, tradeInfo.token2, tradeInfo.value)">
-                            {{index}} {{item}}
+                            {{index}}
+                            <b-tooltip :label="item.toString()"
+                              position="is-bottom">
+                              {{item.toString().split('.')[0]}}{{item.toString().split('.')[1]?'.'+item.toString().split('.')[1].slice(0, 4):''}}
+                            </b-tooltip>
                         </b-radio>
                       </div>
                     </template>
                   </div>
-                  <div class="column is-6">
+                  <div class="column is-4">
 
                     <h2 class="is-size-6 mb-3">you get</h2>
-                    <h2 class="is-size-6 mb-3" :style="{width: '100%', height: '40px'}">{{tradeInfo.value2}}</h2>
+                    <h2 class="is-size-6 mb-3" :style="{width: '100%', height: '40px'}">
+                      <b-tooltip :label="tradeInfo.value2.toString()"
+                        position="is-bottom">
+                        {{tradeInfo.value2.toString().split('.')[0]}}{{tradeInfo.value2.toString().split('.')[1]?'.'+tradeInfo.value2.toString().split('.')[1].slice(0, 4):''}}
+                      </b-tooltip>
+                    </h2>
                     
                     <div v-for="(item, index) in tradeInfo.options"
                         :key="index">
@@ -363,9 +393,19 @@
                   </div>
                 </div>
               </div>
-              <div class="column is-3">
+              <div class="column is-4">
                 <h2 class="is-size-6 mb-3">
-                  Обменять для аккаунта  №{{tradeInfo.account+1}} {{tradeInfo.token}} {{tradeInfo.value}} на {{tradeInfo.token2}} {{tradeInfo.value2}} </h2>
+                  Обменять для аккаунта  №{{tradeInfo.account+1}} {{tradeInfo.token}} 
+                  <b-tooltip :label="tradeInfo.value.toString()"
+                    position="is-bottom">
+                    {{tradeInfo.value.toString().split('.')[0]}}{{tradeInfo.value.toString().split('.')[1]?'.'+tradeInfo.value.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip>
+                  на {{tradeInfo.token2}} 
+                  <b-tooltip :label="tradeInfo.value2.toString()"
+                    position="is-bottom">
+                    {{tradeInfo.value2.toString().split('.')[0]}}{{tradeInfo.value2.toString().split('.')[1]?'.'+tradeInfo.value2.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip>
+                </h2>
                 <b-button expanded type="is-primary" outlined
                   :disabled="createTradeBtn"
                   @click="trade(tradeInfo), tradeModal = false">Подтвердить</b-button>
@@ -379,7 +419,7 @@
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Вернуть займ</h2>
             <div class="columns is-multiline">
-              <div class="column is-4">
+              <div class="column is-2">
                 <h2 class="is-size-6 mb-3">account</h2>
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
@@ -393,7 +433,7 @@
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">token</h2>
                 <b-input type="text" class="is-flex-grow-2 mb-3" v-model="repayInfo.value" ></b-input>
                 <div v-for="(item, index) in repayInfo.borrows"
@@ -404,16 +444,24 @@
                       :native-value="item.name"
                       @click.native="setRepayValue(repayInfo.account, item.name)"
                       >
-                      {{item.name}} - {{item.value}}
+                      {{item.name}} - 
+                      <b-tooltip :label="item.value.toString()"
+                        position="is-bottom">
+                        {{item.value.toString().split('.')[0]}}{{item.value.toString().split('.')[1]?'.'+item.value.toString().split('.')[1].slice(0, 4):''}}
+                      </b-tooltip>
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-1">к возврату: {{repayInfo.sumBorrowPlusEffects }} ETH</h2>
                 <h2 class="is-size-6 mb-1">обеспечение: {{repayInfo.sumCollateral}} BTC</h2>
                 <h3 class="is-size-8 mb-3">
                   Вернуть займ аккаунта №{{repayInfo.account+1}} в размере
-                  {{repayInfo.payValue}} {{repayInfo.token}} <br>
+                    <b-tooltip :label="repayInfo.value.toString()"
+                      position="is-bottom">
+                      {{repayInfo.value.toString().split('.')[0]}}{{repayInfo.value.toString().split('.')[1]?'.'+repayInfo.value.toString().split('.')[1].slice(0, 4):''}}
+                    </b-tooltip>
+                   {{repayInfo.token}} <br>
                 </h3>
                 <b-button expanded type="is-primary" outlined
                   :disabled="poolAccounts.length == 0 || repayInfo.borrows.length == 0 || repayInfo.token == '' || repayInfo.value == '' || parseFloat(repayInfo.value) == 0"
@@ -443,7 +491,12 @@
                 </div>
               </div>
               <div class="column is-2">
-                <h2 class="is-size-6 mb-3">token max({{liquidateInfo.maxLiquidate}})</h2>
+                <h2 class="is-size-6 mb-3">token max(
+                  <b-tooltip :label="liquidateInfo.maxLiquidate.toString()"
+                    position="is-bottom">
+                    {{liquidateInfo.maxLiquidate.toString().split('.')[0]}}{{liquidateInfo.maxLiquidate.toString().split('.')[1]?'.'+liquidateInfo.maxLiquidate.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip>)
+                </h2>
                 <b-input type="text" class="is-flex-grow-2 mb-3" v-model="liquidateInfo.value" ></b-input>
                 <div v-for="(item, index) in liquidateInfo.options1"
                     :key="index">
@@ -502,7 +555,7 @@
         <section class="modal-card-body">
           <h2 class="is-size-4 mb-3">Вернуть стейбл коины</h2>
             <div class="columns is-multiline">
-              <div class="column is-4">
+              <div class="column is-2">
                 <h2 class="is-size-6 mb-3">account</h2>
                 <div v-for="(item, index) in poolAccounts"
                     :key="index">
@@ -516,7 +569,7 @@
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
+              <div class="column is-5">
                 <h2 class="is-size-6 mb-3">token</h2>
                 <b-input type="text" class="is-flex-grow-2 mb-3" v-model="repayStableInfo.value" ></b-input>
                 <div v-for="(item, index) in repayStableInfo.borrows"
@@ -527,16 +580,22 @@
                       :native-value="item.name"
                       @click.native="setRepayStableValue(repayStableInfo.account, item.name)"
                       >
-                      {{item.name}} - {{item.value}}
+                      {{item.name}} - 
+                      <b-tooltip :label="item.value.toString()"
+                        position="is-bottom">
+                        {{item.value.toString().split('.')[0]}}{{item.value.toString().split('.')[1]?'.'+item.value.toString().split('.')[1].slice(0, 4):''}}
+                      </b-tooltip>
                   </b-radio>
                 </div>
               </div>
-              <div class="column is-4">
-                <h2 class="is-size-6 mb-1">к возврату: {{repayStableInfo.sumBorrowPlusEffects }} ETH</h2>
-                <h2 class="is-size-6 mb-1">обеспечение: {{repayStableInfo.sumCollateral}} BTC</h2>
+              <div class="column is-5">
                 <h3 class="is-size-8 mb-3">
                   Вернуть стейбл коины аккаунта №{{repayStableInfo.account+1}}
-                  {{repayStableInfo.payValue}} {{repayStableInfo.token}} <br>
+                  
+                  <b-tooltip :label="repayStableInfo.value.toString()"
+                    position="is-bottom">
+                    {{repayStableInfo.value.toString().split('.')[0]}}{{repayStableInfo.value.toString().split('.')[1]?'.'+repayStableInfo.value.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip> {{repayStableInfo.token}} <br>
                 </h3>
                 <b-button expanded type="is-primary" outlined
                   :disabled="poolAccounts.length == 0 || repayStableInfo.borrows.length == 0 || repayStableInfo.token == '' || repayStableInfo.value == '' || parseFloat(repayStableInfo.value) == 0"
@@ -567,7 +626,12 @@
               </div>
               <div class="column is-2">
                 
-                <h2 class="is-size-6 mb-3">token max({{liquidateStableInfo.maxLiquidate}})</h2>
+                <h2 class="is-size-6 mb-3">token max(
+                  <b-tooltip :label="liquidateStableInfo.maxLiquidate.toString()"
+                    position="is-bottom">
+                    {{liquidateStableInfo.maxLiquidate.toString().split('.')[0]}}{{liquidateStableInfo.maxLiquidate.toString().split('.')[1]?'.'+liquidateStableInfo.maxLiquidate.toString().split('.')[1].slice(0, 4):''}}
+                  </b-tooltip>)
+                </h2>
 
                 <b-input type="text" class="is-flex-grow-2 mb-3" v-model="liquidateStableInfo.value" ></b-input>
                 <div v-for="(item, index) in liquidateStableInfo.options1"
