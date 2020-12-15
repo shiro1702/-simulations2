@@ -28,18 +28,15 @@
         </cmp-accounts-form>
       </div>
       <div class="column">
-        <!-- <cmp-form :form="credit" title="Кредиты">
-        </cmp-form>
-        <cmp-form :form="bargaining" title="Торги">
-        </cmp-form> -->
 
         <h2 class="is-size-4 mb-3">Операции</h2>
         <div class="columns is-multiline">
 
-          <!-- <div class="column is-half">
-            <b-button expanded type="is-primary">Запуск симуляции</b-button>
-          </div> -->
-          
+          <div class="column is-full">
+            <b-button expanded type="is-primary" outlined
+              @click="simulation()">Запуск симуляции</b-button>
+          </div>
+
           <div class="column is-half">
             <b-button expanded type="is-primary" outlined
               :disabled="tickDisble"
@@ -100,8 +97,7 @@
     <div class="columns fullHeight" >
       <div class="column is-9" style="overflow: scroll">
         <h2 class="is-size-4 mb-3">Результат</h2>
-         
-          <b-table :data="this.table" :columns="columns"></b-table>
+        <b-table :data="this.table" :columns="columns"></b-table> 
       </div>
       <div class="column is-3">
         <h2 class="is-size-4 mb-3 ">История</h2>
@@ -112,13 +108,11 @@
         </div>
       </div>
     </div>
-    <!-- <b-button type="is-primary" @click="tokenModal = true">Primary</b-button> -->  
     <b-modal v-model="tokenModal" :width="640">
       <div class="modal-card modal-content-height" style="width: auto">
         <section class="modal-card-body">
         </section>
       </div>
-      
     </b-modal>
     <b-modal v-model="priceModal" :width="440">
       <div class="modal-card modal-content-height" style="width: auto">
@@ -197,7 +191,7 @@
                 </div>
               </div>
               <div class="column is-4">
-                <h2 class="is-size-6 mb-3">token</h2>
+                <h2 class="is-size-6 mb-3">xToken</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="returnDepositInfo.value" ></b-input>
                 <div v-for="(item, index) in returnDepositInfo.options"
                     :key="index">
@@ -442,16 +436,14 @@
                       v-model="liquidateInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setMaxLiquidate(parseInt(index), liquidateInfo.token), setLiqidateOptions1(parseInt(index), parseInt(liquidateInfo.account2)), setLiqidateOptions(parseInt(index))"
+                      @click.native="setLiqidateOptions1(parseInt(index), parseInt(liquidateInfo.account2)), setLiqidateOptions(parseInt(index)), setMaxLiquidate(parseInt(index), liquidateInfo.token)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
                 </div>
               </div>
               <div class="column is-2">
-                
                 <h2 class="is-size-6 mb-3">token max({{liquidateInfo.maxLiquidate}})</h2>
-
                 <b-input type="text" class="is-flex-grow-2 mb-3" v-model="liquidateInfo.value" ></b-input>
                 <div v-for="(item, index) in liquidateInfo.options1"
                     :key="index">
@@ -473,7 +465,7 @@
                       v-model="liquidateInfo.account2"
                       name="account2"
                       :native-value="parseInt(index)"
-                      @click.native="setLiqidateOptions1(parseInt(liquidateInfo.account), parseInt(index)), setLiqidateOptions(parseInt(liquidateInfo.account), parseInt(index))"
+                      @click.native="setLiqidateOptions(parseInt(liquidateInfo.account), parseInt(index))"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -567,7 +559,7 @@
                       v-model="liquidateStableInfo.account"
                       name="account"
                       :native-value="parseInt(index)"
-                      @click.native="setLiqidateStableOptions1(parseInt(index)), setLiqidateStableOptions(parseInt(index), parseInt(liquidateStableInfo.account2))"
+                      @click.native="setLiqidateStableOptions1(parseInt(index)), setLiqidateStableOptions(parseInt(index), parseInt(liquidateStableInfo.account2)), setMaxLiquidateStable(parseInt(index), liquidateStableInfo.token)"
                       >
                       №{{parseInt(index)+1}}
                   </b-radio>
@@ -584,6 +576,7 @@
                       v-model="liquidateStableInfo.token"
                       name="token"
                       :native-value="item"
+                      @click.native="setMaxLiquidateStable(liquidateStableInfo.account, item)"
                       >
                       <!-- @click.native="setMaxLiquidate(liquidateStableInfo.account, item)" -->
                       {{item}}
@@ -624,7 +617,7 @@
                 </h3>
                 <b-button expanded type="is-primary" outlined
                   :disabled="poolAccounts.length == 0 || liquidateStableInfo.token == '' || liquidateStableInfo.token2 == '' || liquidateStableInfo.options1.length == 0 || liquidateStableInfo.options == 0 || liquidateStableInfo.value == '' || parseFloat(liquidateStableInfo.value) == 0"
-                  @click="liquidateS(liquidateStableInfo), liquidateModal = false">Подтвердить</b-button>
+                  @click="liquidateS(liquidateStableInfo), liquidateStableModal = false">Подтвердить</b-button>
               </div>
             </div>
         </section>
@@ -652,6 +645,7 @@ export default {
   data() {
     return {
       capital: 0,
+      simulationTickTimer: 0,
       tickDisble: true,
       tokenModal: false,
       priceModal: false,
@@ -1035,9 +1029,9 @@ export default {
     },
     liquidateModal(val){
       if (val){
-        this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
         this.setLiqidateOptions1(this.liquidateInfo.account, this.liquidateInfo.account2)
         this.setLiqidateOptions(this.liquidateInfo.account)
+        this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
       }
     },
     repayStableModal(val){
@@ -1055,7 +1049,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions('accounts', ['updateAccounts']),
+    ...mapActions('accounts', ['updateAccounts', 'addBalanceToAccount']),
     ...mapMutations('prices', ['setPrices']),
     ...mapActions('prices', ['setPricesArray']),
     Create(){
@@ -1100,19 +1094,261 @@ export default {
       this.updateResults();
       this.history.push('pool tick');
     },
+    simulationTick(callback, data){
+      setTimeout(()=>{  
+        callback(data)
+      }, this.simulationTickTimer * 100)
+      this.simulationTickTimer++;
+    },
+    simulation(){
+      this.simulationTick(this.addBalanceToAccount, { 
+        i: 0,
+        data: {
+          BTC: 10,
+          ETH: 200,
+        }, 
+        pricesFormat: {...this.poolPricesFormat}
+      })
+
+      this.simulationTick(this.addBalanceToAccount, { 
+        i: 1,
+        data: {
+          BTC: 20,
+          EOS: 180,
+        }, 
+        pricesFormat: this.poolPricesFormat
+      })
+
+      this.simulationTick(this.addBalanceToAccount, { 
+        i: 2,
+        data: {
+          ETH: 180,
+          USDT: 20,
+        }, 
+        pricesFormat: this.poolPricesFormat
+      })
+
+      this.simulationTick(this.addBalanceToAccount, { 
+        i: 3,
+        data: {
+          BTC: 20,
+          EOS: 2200,
+          USDT: 210,
+        }, 
+        pricesFormat: this.poolPricesFormat
+      })
+
+      this.simulationTick(this.createDeposit, { 
+        account: 0,
+        token: "BTC",
+        value: "10",
+      })
+      this.simulationTick(this.createDeposit, { 
+        account: 0,
+        token: "ETH",
+        value: "100",
+      })
+      this.simulationTick(this.createDeposit, { 
+        account: 1,
+        token: "BTC",
+        value: "10",
+      })
+
+      this.simulationTick(this.createDeposit, { 
+        account: 1,
+        token: "EOS",
+        value: "180",
+      })
+
+      this.simulationTick(this.createDeposit, { 
+        account: 2,
+        token: "ETH",
+        value: "180",
+      })
+
+      this.simulationTick(this.createDeposit, { 
+        account: 2,
+        token: "USDT",
+        value: "20",
+      })
+      this.simulationTick(this.createDeposit, { 
+        account: 3,
+        token: "EOS",
+        value: "1800",
+      })
+      this.simulationTick(this.borrow, { 
+        account: 0,
+        token: "ETH",
+        value: "100",
+      })
+
+      this.simulationTick(this.borrow, { 
+        account: 1,
+        token: "EOS",
+        value: "30",
+      })
+      this.simulationTick(this.mint, { 
+        account: 1,
+        token: "sUSD",
+        value: "300",
+      })
+      const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      arr.forEach(()=>{
+        this.nextTick();
+        this.simulationTick(this.nextTick, { 
+        })
+      })
+      
+
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "ETH",
+        token2: "EOS",
+        value: "10",
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "ETH",
+        token2: "BTC",
+        value: "100",
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 1,
+        token: "EOS",
+        token2: "BTC",
+        value: "30",
+      })
+      this.simulationTick(this.trade, { 
+        account: 1,
+        token: "BTC",
+        token2: "ETH",
+        value: "0.03",
+      })
+
+      const arr2 = [0, 1, 2, 3, 4];
+      arr2.forEach(()=>{
+        this.nextTick();
+        this.simulationTick(this.nextTick, { 
+        })
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "EOS",
+        token2: "ETH",
+        value: "100",
+      })
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "BTC",
+        token2: "ETH",
+        value: "1",
+      })
+      this.simulationTick(this.trade, { 
+        account: 1,
+        token: "BTC",
+        token2: "ETH",
+        value: "1",
+      })
+      this.simulationTick(this.trade, { 
+        account: 2,
+        token: "ETH",
+        token2: "BTC",
+        value: "10",
+      })
+
+      arr2.forEach(()=>{
+        this.simulationTick(this.nextTick, { 
+        })
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "ETH",
+        token2: "BTC",
+        value: "50",
+      })
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "BTC",
+        token2: "ETH",
+        value: "0.5",
+      })
+      this.simulationTick(this.trade, { 
+        account: 2,
+        token: "BTC",
+        token2: "ETH",
+        value: "3",
+      })
+      this.simulationTick(this.trade, { 
+        account: 0,
+        token: "BTC",
+        token2: "ETH",
+        value: "1",
+      })
+
+      arr2.forEach(()=>{
+        this.simulationTick(this.nextTick, { 
+        })
+      })
+
+      this.simulationTick(this.repay, { 
+        account: 0,
+        token: "ETH",
+        value: window.pool.getInfo(this.poolPricesFormat).accounts[0].borrows.ETH.value,
+      })
+
+      this.simulationTick(this.repay, { 
+        account: 0,
+        token: "ETH",
+        value: window.pool.getInfo(this.poolPricesFormat).accounts[0].borrows.ETH.value,
+      })
+
+      this.simulationTick(this.liquidate, { 
+        account: 1,
+        account2: 3,
+        token: "EOS",
+        token2: "BTC",
+        value: window.pool.getInfo(this.poolPricesFormat).accounts[1].borrows.EOS.value.toString(),
+      })
+
+      arr2.forEach(()=>{
+        this.simulationTick(this.nextTick, { 
+        })
+      })
+
+      this.simulationTick(this.repayStable, { 
+        account: 2,
+        token: "sUSD",
+        value: 1000,
+      })
+      arr2.forEach(()=>{
+      this.simulationTick(this.nextTick, { 
+      })
+      })
+      this.simulationTick(this.liquidateS, { 
+        account: 1,
+        account2: 3,
+        token: "sUSD",
+        token2: "EOS",
+        value: 300,
+      })
+    },
     setCreateDepositOptions(val){
       const balance = this.poolAccounts[val].balance;
       let test = true;
       for (let key in balance) {
         if (test){
           this.createDepositInfo.token = key;
-          this.createDepositInfo.value = balance[key]
+          this.createDepositInfo.value = balance[key].toString();
         }
         test = false;
       }
     },
     setCreateDepositValue(val){
-      this.createDepositInfo.value = this.poolAccounts[this.createDepositInfo.account].balance[val];
+      this.createDepositInfo.value = this.poolAccounts[this.createDepositInfo.account].balance[val].toString();
     },
     createDeposit(createDepositInfo){
       window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: parseFloat(createDepositInfo.value) });
@@ -1177,10 +1413,9 @@ export default {
 
         this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
       }
-
-
     },
     repay(repayInfo){
+      console.log(repayInfo);
       const test = window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
 
       if (test){
@@ -1208,22 +1443,16 @@ export default {
           })
         }
       }
-      this.repayInfo.token = this.repayInfo.borrows[0].name;
-      // this.repayInfo.depositsToken = account.deposits
-      // this.repayInfo.deposits = account.deposits.toString();
-      // this.repayInfo.sumCollateral = account.sumCollateral.toString();
-      // this.repayInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
+      this.repayInfo.token = this.repayInfo.borrows[0].name?this.repayInfo.borrows[0].name:'';
     },
     setRepayValue(account, token){
-      this.repayInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value;
+      this.repayInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value.toString();
     },
     setRepayStableAccountInfo(accountIndex){
       let accountBorrows = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex].borrows
       let accountBorrowsKeys = Object.keys(accountBorrows).filter(x => window.pool.config.stable.includes(x))
-      console.log(accountBorrows);
-      console.log(accountBorrowsKeys);
-      // Object.keys(window.pool.accounts.get(accountIndex).balance).filter(x => window.pool.config.stable.includes(x))
-      // console.log(account.borrows);
+      // console.log(accountBorrows);
+      // console.log(accountBorrowsKeys);
       this.repayStableInfo.borrows = []
       accountBorrowsKeys.forEach(key => {
         if (Object.prototype.hasOwnProperty.call(accountBorrows, key)) {
@@ -1233,13 +1462,14 @@ export default {
           })
         }
       })
-      this.repayStableInfo.token = this.repayStableInfo.borrows[0].name;
-      console.log(this.repayStableInfo.borrows );
+      this.repayStableInfo.token = this.repayStableInfo.borrows[0].name?this.repayStableInfo.borrows[0].name:'';
+      // console.log(this.repayStableInfo.borrows );
     },
     setRepayStableValue(account, token){
-      this.repayStableInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value;
+      this.repayStableInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value.toString();
     },
     repayStable(repayStableInfo){
+      console.log(repayStableInfo);
       const test = window.pool.burn(repayStableInfo.account, repayStableInfo.token, parseFloat(repayStableInfo.value));
       if (test){
         this.history.push(`аккаунт №${repayStableInfo.account + 1} вернул стейбл коины на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
@@ -1253,21 +1483,30 @@ export default {
       this.updateResults();
     },
     setMaxLiquidate(accountId, token){
-      this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token);
-      this.liquidateInfo.value = this.liquidateInfo.maxLiquidate;
+      // this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token).toString();
+      let maxL = window.pool.getInfo(this.poolPricesFormat).accounts[accountId]?.borrows[token]?.value.toString()
+      this.liquidateInfo.maxLiquidate = maxL?maxL:0;
+      this.liquidateInfo.value = this.liquidateInfo.maxLiquidate.toString();
     },
     setLiqidateOptions1(accountId1, accountId2){
       this.liquidateInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).borrows).filter(x => Object.keys(window.pool.accounts.get(accountId2).balance).includes(x));
       this.liquidateInfo.token = this.liquidateInfo.options1[0];
+      this.setMaxLiquidate(this.liquidateInfo.account, this.liquidateInfo.token);
     },
     setLiqidateOptions(accountId1){
       this.liquidateInfo.options = Object.keys(window.pool.accounts.get(accountId1).deposits)
       this.liquidateInfo.token2 = this.liquidateInfo.options[0];
     },
     liquidate(liquidateInfo){
+      // console.log(liquidateInfo);
       window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);
       this.updateResults();
       this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}`);
+    },
+    setMaxLiquidateStable(accountId, token){
+      let maxL = window.pool.getInfo(this.poolPricesFormat).accounts[accountId]?.borrows[token]?.value.toString();
+      this.liquidateStableInfo.maxLiquidate = maxL?maxL:0;
+      this.liquidateStableInfo.value = this.liquidateStableInfo.maxLiquidate.toString();
     },
     setLiqidateStableOptions1(accountId1){
       this.liquidateStableInfo.options1 = Object.keys(window.pool.accounts.get(accountId1).balance).filter(x => window.pool.config.stable.includes(x))
@@ -1280,6 +1519,7 @@ export default {
       this.liquidateStableInfo.token2 = this.liquidateStableInfo.options[0]
     },
     liquidateS(liquidateStableInfo){
+      console.log(liquidateStableInfo);
       const test = window.pool.liquidateStable(liquidateStableInfo.account, liquidateStableInfo.token, parseFloat(liquidateStableInfo.value), liquidateStableInfo.token2, liquidateStableInfo.account2);
       if (test) {
         this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
@@ -1304,7 +1544,7 @@ export default {
     // },
     setMaxToMint(accountId, token){
       // console.log('setMaxToMint');
-      this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token);
+      this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token).toString();
       this.mintInfo.value = this.mintInfo.maxMint;
     },
     setMintOptions(){
@@ -1316,7 +1556,7 @@ export default {
       this.updateResults();
     },
     setTradeValue(account, token){
-      this.tradeInfo.value = this.poolAccounts[account].balance[token];
+      this.tradeInfo.value = this.poolAccounts[account].balance[token].toString();
     },
     setTradeOptions(account){
       // this.tradeInfo.token = poolAccounts[tradeInfo.account].balance;

@@ -97,7 +97,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions('accounts', ['saveItem', 'deleteItem', 'addBalanceToAccount']),
+    ...mapActions('accounts', ['addBalanceToAccount']),
     unformat(data){
       // console.log('data', data);
       let newData = []

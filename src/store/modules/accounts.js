@@ -1,35 +1,6 @@
 export default {
 	namespaced: true,
 	state: {
-		items: [
-            [
-                // {
-                //     name: "BTC",
-                //     value: 100,
-                //     checked: false,
-                // },
-                // {
-                //     name: "ETH",
-                //     value: 100,
-                //     checked: true,
-                // },
-                // {
-                //     name: "USDT",
-                //     value: 100,
-                //     checked: true,
-                // },
-                // {
-                //     name: "EOS",
-                //     value: 100,
-                //     checked: false,
-                // },
-                // {
-                //     name: "sUSD",
-                //     value: 100,
-                //     checked: false,
-                // },
-            ],
-        ],
         poolAccounts: [
             
         ]
@@ -50,20 +21,6 @@ export default {
         },
 	},
 	mutations: {
-		// создание контакта
-		createItem(state, data){ 
-			state.items.push(data)
-		},
-		// редактивроание контакта
-		editItem(state, data){
-            let i = data.i;
-            console.log(i);
-			state.items.splice(i, 1, data.data)
-		},
-		// удаление контакта
-		deleteItem(state, i){
-			state.items.splice(i, 1)
-        },
         setInfo(state, poolAccounts){
             state.poolAccounts = [];
             for (const key in poolAccounts) {
@@ -75,22 +32,8 @@ export default {
 
 	},
 	actions: {
-		// сохранение или редактирование контакта смотря есть ли id
-		saveItem({commit}, item){
-            console.log(item);
-            if (item.i != undefined ){
-                console.log('editItem', item.i );
-                commit('editItem', item);
-            } else {
-                console.log('createItem');
-                commit('createItem', item.data);
-            }
-		},
-		// удаление контакта
-		deleteItem({commit}, i){
-            commit('deleteItem', i);
-        },
         addBalanceToAccount({state, dispatch}, {i, data, pricesFormat}){
+            console.log( {i, data, pricesFormat} );
             if (i != undefined){
                 window.pool.accounts.issueBalance(i, data)
             } else {
