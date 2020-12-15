@@ -13,7 +13,15 @@ export default {
                 for (const key in item.balance) {
                     if (Object.prototype.hasOwnProperty.call(item.balance, key) && rootGetters['prices/poolPricesFormat'][key]) {
                         summ+= parseFloat(item.balance[key]) * rootGetters['prices/poolPricesFormat'][key]
+                    } else {
+                        const xKey = key.split('x')[1]
+                        if (rootGetters['prices/poolPricesFormat'][xKey]){
+                            summ+= parseFloat(item.balance[key]) * window.pool._getExchangeRate(xKey).toString() * rootGetters['prices/poolPricesFormat'][xKey]
+                        }
                     }
+                    // if (Object.prototype.hasOwnProperty.call(item.balance, key) && rootGetters['prices/poolPricesFormat'][key]) {
+                    //     summ+= parseFloat(item.balance[key]) * rootGetters['prices/poolPricesFormat'][key]
+                    // }
                 }
                 poolAccountsSumm.push(summ)
             })

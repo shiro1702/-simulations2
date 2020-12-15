@@ -687,6 +687,8 @@
         </section>
       </div>
     </b-modal>
+    <b-loading :is-full-page="true" v-model="isLoading" :can-cancel="false">
+    </b-loading>
   </div>
 </template>
 
@@ -709,7 +711,9 @@ export default {
   data() {
     return {
       capital: 0,
+      simulationAccountStart: 0,
       simulationTickTimer: 0,
+      isLoading: false,
       tickDisble: true,
       tokenModal: false,
       priceModal: false,
@@ -1159,14 +1163,26 @@ export default {
       this.history.push('pool tick');
     },
     simulationTick(callback, data){
+      this.simulationTickTimer++;
       setTimeout(()=>{  
+        // console.log(callback, data);
         callback(data)
       }, this.simulationTickTimer * 100)
-      this.simulationTickTimer++;
+      // console.log(this.simulationTickTimer * 100);
+
+    },
+    simulationEnd(val){
+      console.log('loaded', val);
+      this.isLoading = val;
     },
     simulation(){
+      this.isLoading = true;
+      if (this.simulationAccountStart == 0){
+        this.simulationAccountStart = this.poolAccounts.length;
+      }
+
       this.simulationTick(this.addBalanceToAccount, { 
-        i: 0,
+        i: 0 + this.simulationAccountStart,
         data: {
           BTC: 10,
           ETH: 200,
@@ -1175,7 +1191,7 @@ export default {
       })
 
       this.simulationTick(this.addBalanceToAccount, { 
-        i: 1,
+        i: 1 + this.simulationAccountStart,
         data: {
           BTC: 20,
           EOS: 180,
@@ -1184,7 +1200,7 @@ export default {
       })
 
       this.simulationTick(this.addBalanceToAccount, { 
-        i: 2,
+        i: 2 + this.simulationAccountStart,
         data: {
           ETH: 180,
           USDT: 20,
@@ -1193,7 +1209,7 @@ export default {
       })
 
       this.simulationTick(this.addBalanceToAccount, { 
-        i: 3,
+        i: 3 + this.simulationAccountStart,
         data: {
           BTC: 20,
           EOS: 2200,
@@ -1203,94 +1219,59 @@ export default {
       })
 
       this.simulationTick(this.createDeposit, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "BTC",
         value: "10",
       })
       this.simulationTick(this.createDeposit, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "ETH",
         value: "100",
       })
       this.simulationTick(this.createDeposit, { 
-        account: 1,
+        account: 1 + this.simulationAccountStart,
         token: "BTC",
         value: "10",
       })
 
       this.simulationTick(this.createDeposit, { 
-        account: 1,
+        account: 1 + this.simulationAccountStart,
         token: "EOS",
         value: "180",
       })
 
       this.simulationTick(this.createDeposit, { 
-        account: 2,
+        account: 2 + this.simulationAccountStart,
         token: "ETH",
         value: "180",
       })
 
       this.simulationTick(this.createDeposit, { 
-        account: 2,
+        account: 2 + this.simulationAccountStart,
         token: "USDT",
         value: "20",
       })
       this.simulationTick(this.createDeposit, { 
-        account: 3,
+        account: 3 + this.simulationAccountStart,
         token: "EOS",
         value: "1800",
       })
       this.simulationTick(this.borrow, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "ETH",
         value: "100",
       })
 
       this.simulationTick(this.borrow, { 
-        account: 1,
+        account: 1 + this.simulationAccountStart,
         token: "EOS",
         value: "30",
       })
       this.simulationTick(this.mint, { 
-        account: 1,
+        account: 1 + this.simulationAccountStart,
         token: "sUSD",
         value: "300",
       })
-      const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-      arr.forEach(()=>{
-        this.nextTick();
-        this.simulationTick(this.nextTick, { 
-        })
-      })
-      
-
-      this.simulationTick(this.trade, { 
-        account: 0,
-        token: "ETH",
-        token2: "EOS",
-        value: "10",
-      })
-
-      this.simulationTick(this.trade, { 
-        account: 0,
-        token: "ETH",
-        token2: "BTC",
-        value: "100",
-      })
-
-      this.simulationTick(this.trade, { 
-        account: 1,
-        token: "EOS",
-        token2: "BTC",
-        value: "30",
-      })
-      this.simulationTick(this.trade, { 
-        account: 1,
-        token: "BTC",
-        token2: "ETH",
-        value: "0.03",
-      })
-
       const arr2 = [0, 1, 2, 3, 4];
       arr2.forEach(()=>{
         this.nextTick();
@@ -1299,25 +1280,58 @@ export default {
       })
 
       this.simulationTick(this.trade, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
+        token: "ETH",
+        token2: "EOS",
+        value: "10",
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 0 + this.simulationAccountStart,
+        token: "ETH",
+        token2: "BTC",
+        value: "100",
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 1 + this.simulationAccountStart,
+        token: "EOS",
+        token2: "BTC",
+        value: "30",
+      })
+      this.simulationTick(this.trade, { 
+        account: 1 + this.simulationAccountStart,
+        token: "BTC",
+        token2: "ETH",
+        value: "0.03",
+      })
+
+      arr2.forEach(()=>{
+        this.nextTick();
+        this.simulationTick(this.nextTick, { 
+        })
+      })
+
+      this.simulationTick(this.trade, { 
+        account: 0 + this.simulationAccountStart,
         token: "EOS",
         token2: "ETH",
         value: "100",
       })
       this.simulationTick(this.trade, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "BTC",
         token2: "ETH",
         value: "1",
       })
       this.simulationTick(this.trade, { 
-        account: 1,
+        account: 1 + this.simulationAccountStart,
         token: "BTC",
         token2: "ETH",
         value: "1",
       })
       this.simulationTick(this.trade, { 
-        account: 2,
+        account: 2 + this.simulationAccountStart,
         token: "ETH",
         token2: "BTC",
         value: "10",
@@ -1329,25 +1343,25 @@ export default {
       })
 
       this.simulationTick(this.trade, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "ETH",
         token2: "BTC",
         value: "50",
       })
       this.simulationTick(this.trade, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "BTC",
         token2: "ETH",
         value: "0.5",
       })
       this.simulationTick(this.trade, { 
-        account: 2,
+        account: 2 + this.simulationAccountStart,
         token: "BTC",
         token2: "ETH",
         value: "3",
       })
       this.simulationTick(this.trade, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "BTC",
         token2: "ETH",
         value: "1",
@@ -1358,21 +1372,23 @@ export default {
         })
       })
 
+      this.simulationTick(this.simulationEnd, false)
+
       this.simulationTick(this.repay, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "ETH",
         value: window.pool.getInfo(this.poolPricesFormat).accounts[0].borrows.ETH.value,
       })
 
       this.simulationTick(this.repay, { 
-        account: 0,
+        account: 0 + this.simulationAccountStart,
         token: "ETH",
         value: window.pool.getInfo(this.poolPricesFormat).accounts[0].borrows.ETH.value,
       })
 
       this.simulationTick(this.liquidate, { 
-        account: 1,
-        account2: 3,
+        account: 1 + this.simulationAccountStart,
+        account2: 3 + this.simulationAccountStart,
         token: "EOS",
         token2: "BTC",
         value: window.pool.getInfo(this.poolPricesFormat).accounts[1].borrows.EOS.value.toString(),
@@ -1384,21 +1400,22 @@ export default {
       })
 
       this.simulationTick(this.repayStable, { 
-        account: 2,
+        account: 2 + this.simulationAccountStart,
         token: "sUSD",
         value: 1000,
       })
-      arr2.forEach(()=>{
-      this.simulationTick(this.nextTick, { 
-      })
-      })
+
       this.simulationTick(this.liquidateS, { 
-        account: 1,
-        account2: 3,
+        account: 1 + this.simulationAccountStart,
+        account2: 3 + this.simulationAccountStart,
         token: "sUSD",
         token2: "EOS",
         value: 300,
       })
+      // this.simulationTick(()=>{
+      //   this.isLoading = false;
+      // }, {})
+      
     },
     setCreateDepositOptions(val){
       const balance = this.poolAccounts[val].balance;
