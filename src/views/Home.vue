@@ -97,7 +97,53 @@
     <div class="columns fullHeight" >
       <div class="column is-9" style="overflow: scroll">
         <h2 class="is-size-4 mb-3">Результат</h2>
-        <b-table :data="this.table" :columns="columns"></b-table> 
+        <b-table :data="this.table" >
+
+          <b-table-column field="name" label="name" v-slot="props">
+              {{ props.row.name }}
+          </b-table-column>
+          <b-table-column field="value" label="value" v-slot="props">
+              {{ props.row.value }}
+          </b-table-column>
+          <b-table-column field="totalBorrows" label="totalBorrows" v-slot="props">
+              {{ props.row.totalBorrows }}
+          </b-table-column>
+          <b-table-column field="borrowIndex" label="borrowIndex" v-slot="props">
+              {{ props.row.borrowIndex }}
+          </b-table-column>
+          <b-table-column field="totalReserves" label="totalReserves" v-slot="props">
+              {{ props.row.totalReserves }}
+          </b-table-column>
+          <b-table-column field="price" label="price" v-slot="props">
+              {{ props.row.price }}
+          </b-table-column>
+          <b-table-column field="capital" label="capital" v-slot="props">
+            <span v-if="props.row.name!='summ'">
+              {{ props.row.capital }}
+            </span>
+            <b v-else>
+              {{ props.row.capital }}
+            </b>
+          </b-table-column>
+          <b-table-column field="weight" label="weight" v-slot="props">
+              {{ props.row.weight }}
+          </b-table-column>
+          <b-table-column field="staked" label="staked" v-slot="props">
+              {{ props.row.staked }}
+          </b-table-column>
+          <b-table-column field="prevDay" label="prevDay" v-slot="props">
+              {{ props.row.prevDay }}
+          </b-table-column>
+          <b-table-column field="utilizationRate" label="utilizationRate" v-slot="props">
+              {{ props.row.utilizationRate }}
+          </b-table-column>
+          <b-table-column field="borrowRate" label="borrowRate" v-slot="props">
+              {{ props.row.borrowRate }}
+          </b-table-column>
+          <!-- <b-table-column field="supplyRate" label="supplyRate" v-slot="props">
+              {{ props.row.supplyRate }}
+          </b-table-column> -->
+        </b-table> 
       </div>
       <div class="column is-3">
         <h2 class="is-size-4 mb-3 ">История</h2>
@@ -974,7 +1020,7 @@ export default {
         },
         {
             field: 'capital',
-            label: 'capital' + ` ${this.capital}`,
+            label: 'capital',
         },
         {
             field: 'weight',
@@ -1144,17 +1190,34 @@ export default {
 
       for (const key in reserves) {
         if (Object.prototype.hasOwnProperty.call(reserves, key)) {
-
           let element = {};
           element.name = key;
           for (const key2 in reserves[key]) {
             if (Object.prototype.hasOwnProperty.call(reserves, key)) {
               element[key2] = reserves[key][key2].toString();
+              // console.log(key2)
             }
           }
           this.table.push(element)
         }
       }
+      const last = {
+        name: 'summ',
+        value: '',
+        totalBorrows: '',
+        borrowIndex: '',
+        totalReserves: '',
+        price: '',
+        capital: this.capital,
+        weight: '',
+        staked: '',
+        prevDay: '',
+        utilizationRate: '',
+        borrowRate: '',
+        supplyRate: '',
+
+      }
+      this.table.push(last)
       // console.log( this.table );
     },
     nextTick(){
@@ -1183,7 +1246,6 @@ export default {
       }, this.simulationTickTimer * 100)
     },
     simulationEnd(val){
-      console.log('loaded', val);
       this.isLoading = val;
     },
     simulation(){
@@ -1410,7 +1472,7 @@ export default {
           token2: "BTC",
         }, 
         {
-          value: `window.pool.getInfo(this.poolPricesFormat).accounts[${1+this.simulationAccountStart}].borrows.EOS.value.toString()`,
+          value: `window.pool.getInfo(this.poolPricesFormat).accounts[${1+this.simulationAccountStart}].borrows.EOS.value`,
         }
       );
 

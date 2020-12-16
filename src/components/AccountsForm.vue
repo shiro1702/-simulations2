@@ -7,7 +7,16 @@
           :key="'poolAccounts'+index"
           grouped group-multiline>
         <div class="mb-2">
-          <span>№{{1 + parseInt(index)}} Balance: <b>{{accountSumm[index]}} </b>USD</span>
+          <span>№{{1 + parseInt(index)}} Balance: 
+            <b>
+              <b-tooltip :label="accountSumm[index].toString()"
+                position="is-bottom">
+                <b-taglist attached>
+                  {{accountSumm[index].toString().split('.')[0]}}{{accountSumm[index].toString().split('.')[1]?'.'+accountSumm[index].toString().split('.')[1].slice(0, 4):''}}
+                </b-taglist>
+              </b-tooltip>
+            </b> USD
+          </span>
           <b-button 
               class="ml-3"
               size="is-small" 
@@ -93,7 +102,7 @@ export default {
   .accountsFrom
     &__scroll
       overflow: scroll
-      overflow-x: no-scroll
+      overflow-x: visible
       overflow-y: scroll
       min-height: 100%
       max-height: 500px
