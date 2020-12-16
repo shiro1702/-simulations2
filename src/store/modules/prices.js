@@ -1,7 +1,8 @@
 export default {
 	namespaced: true,
 	state: {
-        poolPrices: []
+        poolPrices: [],
+        stable: [],
 	},
 	getters: {
         poolPricesFormat: state => {
@@ -23,10 +24,17 @@ export default {
                     state.poolPrices.push({
                         name: key,
                         value: parseFloat(poolPrices[key]),
+                        // stable: poolPrices[key]
                     })
                 }
             }
-            window.pool.setPrices(poolPrices)
+            window.pool.setPrices(poolPrices);
+        },
+        setStable(state, stables){
+            state.stable = stables;
+        },
+        addStable(state, stable){
+            state.stable.push(stable);
         },
 	},
 	actions: {

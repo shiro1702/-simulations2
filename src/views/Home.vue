@@ -183,6 +183,9 @@
         <section class="modal-card-body">
           <cmp-form :form="newPrice" title="new price">
           </cmp-form>
+          <b-checkbox class="mt-2" v-model="checkboxNewPrice">
+            стейбл коин
+          </b-checkbox>
           <b-button expanded type="is-primary" 
             class="mt-4"
             :disabled="this.newPriceBtnDis"
@@ -782,6 +785,7 @@ export default {
       tokenModal: false,
       priceModal: false,
       addNewPriceModal: false,
+      checkboxNewPrice: false,
       createDepositModal: false,
       createDepositInfo: {
         account: 0,
@@ -869,13 +873,13 @@ export default {
         {
           name: 'tokens',
           value: config.tokens,
-          options: config.tokens,
+          options: [],
           tooltip: 'Изменить список токенов в пуле',
         },
         {
           name: 'stable',
           value: config.stable,
-          options: config.stable,
+          options: [],
           tooltip: 'Изменить список стейбл коинов в пуле',
         },
         {
@@ -885,6 +889,10 @@ export default {
         {
           name: 'baseRate',
           value: config.baseRate,
+        },
+        {
+          name: 'baseMultiplier',
+          value: config.baseMultiplier,
         },
         {
           name: 'reserveFactor',
@@ -1010,7 +1018,7 @@ export default {
   computed: {
     ...mapState('accounts', {'accounts': 'items', 'poolAccounts': 'poolAccounts'}),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
-    ...mapState('prices', ['poolPrices']),
+    ...mapState('prices', ['poolPrices', 'stable']),
     ...mapGetters('prices', ['poolPricesFormat', 'pricesOptions']),
     columns(){ 
       return [
@@ -1066,11 +1074,11 @@ export default {
       return test
     },
     config(){
-      let confog = {}
+      let configLocal = {}
       this.form1.forEach(item => {
-        confog[item.name] = item.value;
+        configLocal[item.name] = item.value;
       });
-      return confog
+      return configLocal
     },
     createDepositBtn(){
       return !(
@@ -1121,11 +1129,28 @@ export default {
     },
     priceModal(val){
       if (val){
-        this.prices = [];
-        this.poolPrices.forEach(item => {      
+        this.poolPrices.forEach(item => {
           this.prices.push(Object.assign({}, item));
         })
+      } else {
+        this.prices = [];
       }
+    },
+    pricesOptions(val){
+      this.form1.forEach((item, index) => {
+        if (item.name == 'tokens') {
+          this.$set(this.form1, index, Object.assign({}, this.form1[index], { options: val }))
+          // this.form1[index] = Object.assign({}, this.form1[index], { options: val.filter(x => !this.stable.includes(x)) })
+        }
+      })
+    },
+    stable(val){
+      this.form1.forEach((item, index) => {
+        if (item.name == 'stable') {
+          this.$set(this.form1, index, Object.assign({}, this.form1[index], { options: val }))
+          // this.form1[index] = Object.assign({}, this.form1[index], { options: val })
+        }
+      })
     },
     addNewPriceModal(val){
       if (val){
@@ -1138,7 +1163,8 @@ export default {
           value: '',
         })
       } else {
-        this.newPrice = []
+        this.newPrice = [];
+        this.checkboxNewPrice = false;
       }
     },
     // pricesFormat(){
@@ -1207,11 +1233,14 @@ export default {
   },
   methods: {
     ...mapActions('accounts', ['updateAccounts', 'addBalanceToAccount']),
-    ...mapMutations('prices', ['setPrices']),
+    ...mapMutations('prices', ['setPrices', 'addStable']),
     ...mapActions('prices', ['setPricesArray']),
 
     addNewPrice(newPrice){
       this.setPricesArray([...this.poolPrices, {name: newPrice[0].value, value: newPrice[1].value}])
+      if (this.checkboxNewPrice){
+        this.addStable(newPrice[0].value);
+      }
     },
     updateResults(){
       let getInfo = window.pool.getInfo(this.poolPricesFormat)
@@ -1796,8 +1825,18 @@ export default {
     window.oracle.init(config);
     window.pool.createPool(config);
     this.setPrices(config.prices)
+    this.addStable('sUSD');
+    this.form1.forEach((item, index) => {
+      if (item.name == 'tokens') {
+        this.$set(this.form1, index, Object.assign({}, this.form1[index], { value: this.pricesOptions.filter(x => !this.stable.includes(x)) }))
+      }
+    })
+    this.form1.forEach((item, index) => {
+      if (item.name == 'stable') {
+        this.$set(this.form1, index, Object.assign({}, this.form1[index], { value: this.stable.filter(() => true) }))
+      }
+    })
   }
-
 }
 </script>
 
