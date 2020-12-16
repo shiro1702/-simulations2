@@ -1169,7 +1169,18 @@ export default {
         callback(data)
       }, this.simulationTickTimer * 100)
       // console.log(this.simulationTickTimer * 100);
-
+    },
+    simulationTickData(callback, data, dataGet){
+      this.simulationTickTimer++;
+      setTimeout(()=>{  
+        let newData ={}
+        for (const key in dataGet) {
+          if ( Object.prototype.hasOwnProperty.call(dataGet, key)) {
+            newData[key] = eval(dataGet[key]);
+          }
+        }
+        callback({...data, ...newData})
+      }, this.simulationTickTimer * 100)
     },
     simulationEnd(val){
       console.log('loaded', val);
@@ -1177,6 +1188,8 @@ export default {
     },
     simulation(){
       this.isLoading = true;
+
+      const arr2 = [0, 1, 2, 3, 4];
       if (this.simulationAccountStart == 0){
         this.simulationAccountStart = this.poolAccounts.length;
       }
@@ -1189,6 +1202,7 @@ export default {
         }, 
         pricesFormat: {...this.poolPricesFormat}
       })
+
 
       this.simulationTick(this.addBalanceToAccount, { 
         i: 1 + this.simulationAccountStart,
@@ -1256,6 +1270,13 @@ export default {
         token: "EOS",
         value: "1800",
       })
+
+      this.simulationTick(this.createDeposit, { 
+        account: 3 + this.simulationAccountStart,
+        token: "BTC",
+        value: "10",
+      })
+
       this.simulationTick(this.borrow, { 
         account: 0 + this.simulationAccountStart,
         token: "ETH",
@@ -1272,7 +1293,6 @@ export default {
         token: "sUSD",
         value: "300",
       })
-      const arr2 = [0, 1, 2, 3, 4];
       arr2.forEach(()=>{
         this.nextTick();
         this.simulationTick(this.nextTick, { 
@@ -1366,44 +1386,44 @@ export default {
         token2: "ETH",
         value: "1",
       })
+      arr2.forEach(()=>{
+        this.simulationTick(this.nextTick, { 
+        })
+      });
+      this.simulationTickData(
+        this.repay, 
+        { 
+          account: 0 + this.simulationAccountStart,
+          token: "ETH",
+        },
+        {
+          value: `window.pool.getInfo(this.poolPricesFormat).accounts[${0+this.simulationAccountStart}].borrows.ETH.value`
+        }
+      );
+
+      this.simulationTickData(
+        this.liquidate, 
+        { 
+          account: 1 + this.simulationAccountStart,
+          account2: 3 + this.simulationAccountStart,
+          token: "EOS",
+          token2: "BTC",
+        }, 
+        {
+          value: `window.pool.getInfo(this.poolPricesFormat).accounts[${1+this.simulationAccountStart}].borrows.EOS.value.toString()`,
+        }
+      );
 
       arr2.forEach(()=>{
         this.simulationTick(this.nextTick, { 
         })
-      })
-
-      this.simulationTick(this.simulationEnd, false)
-
-      this.simulationTick(this.repay, { 
-        account: 0 + this.simulationAccountStart,
-        token: "ETH",
-        value: window.pool.getInfo(this.poolPricesFormat).accounts[0].borrows.ETH.value,
-      })
-
-      this.simulationTick(this.repay, { 
-        account: 0 + this.simulationAccountStart,
-        token: "ETH",
-        value: window.pool.getInfo(this.poolPricesFormat).accounts[0].borrows.ETH.value,
-      })
-
-      this.simulationTick(this.liquidate, { 
-        account: 1 + this.simulationAccountStart,
-        account2: 3 + this.simulationAccountStart,
-        token: "EOS",
-        token2: "BTC",
-        value: window.pool.getInfo(this.poolPricesFormat).accounts[1].borrows.EOS.value.toString(),
-      })
-
-      arr2.forEach(()=>{
-        this.simulationTick(this.nextTick, { 
-        })
-      })
+      });
 
       this.simulationTick(this.repayStable, { 
         account: 2 + this.simulationAccountStart,
         token: "sUSD",
         value: 1000,
-      })
+      });
 
       this.simulationTick(this.liquidateS, { 
         account: 1 + this.simulationAccountStart,
@@ -1411,12 +1431,15 @@ export default {
         token: "sUSD",
         token2: "EOS",
         value: 300,
-      })
+      });
+
+      this.simulationTick(this.simulationEnd, false);
+      console.log('test');
       // this.simulationTick(()=>{
       //   this.isLoading = false;
       // }, {})
-      
     },
+
     setCreateDepositOptions(val){
       const balance = this.poolAccounts[val].balance;
       let test = true;
