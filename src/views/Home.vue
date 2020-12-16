@@ -1016,7 +1016,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('accounts', {'accounts': 'items', 'poolAccounts': 'poolAccounts'}),
+    ...mapState('accounts', {'poolAccounts': 'poolAccounts'}),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
     ...mapState('prices', ['poolPrices', 'stable']),
     ...mapGetters('prices', ['poolPricesFormat', 'pricesOptions']),

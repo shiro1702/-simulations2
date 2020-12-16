@@ -1,6 +1,14 @@
 <template>
   <div>
-    <h2 class="is-size-4 mb-3">{{title}}</h2>
+    <h2 class="is-size-4 mb-3">{{title}}
+      (<b-tooltip :label="accountAllSumm.toString()"
+        position="is-bottom">
+        <b-taglist attached>
+          {{accountAllSumm.toString().split('.')[0]}}{{accountAllSumm.toString().split('.')[1]?'.'+accountAllSumm.toString().split('.')[1].slice(0, 4):''}}
+        </b-taglist>
+      </b-tooltip>
+      USD)
+    </h2>
     <div class="accountsFrom__scroll">
       <div v-for="(item, index) in poolAccounts" 
           class="mb-4"
@@ -84,7 +92,7 @@ export default {
   },
   computed: {
     ...mapState('accounts', ['poolAccounts']),
-    ...mapGetters('accounts', {'accountsChecked': 'itemsChecked', 'accountSumm':'accountSumm'}),
+    ...mapGetters('accounts', {'accountsChecked': 'itemsChecked', 'accountSumm':'accountSumm', 'accountAllSumm': 'accountAllSumm'}),
   },
   methods: {
     openEditModal(index){

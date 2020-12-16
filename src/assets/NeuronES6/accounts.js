@@ -98,7 +98,7 @@ class Accounts {
 
   forEach = (callback) => {
     for (let id in this.accounts) {
-			if (this.accounts.hasOwnProperty(id)) {
+			if (Object.prototype.hasOwnProperty.call(this.accounts, id)) {
 				callback(this.accounts[id], id, this.accounts);
 			}
 		}
