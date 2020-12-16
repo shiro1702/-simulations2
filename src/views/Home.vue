@@ -13,10 +13,16 @@
             </b-taglist>
            </div>
           <b-button 
-              type="is-primary"
-              size="is-small"
-              icon-left="border-color"
-              @click="priceModal = true">
+            type="is-primary" outlined
+            size="is-small"
+            icon-left="plus"
+            @click="addNewPriceModal = true"></b-button>
+          <b-button 
+            type="is-primary"
+            size="is-small"
+            icon-left="border-color"
+            class="ml-3"
+            @click="priceModal = true">
           </b-button>
         </b-field>
       </div>
@@ -33,7 +39,7 @@
         <div class="columns is-multiline">
 
           <div class="column is-full">
-            <b-button expanded type="is-primary" outlined
+            <b-button expanded type="is-primary"
               @click="simulation()">Запуск симуляции</b-button>
           </div>
 
@@ -165,10 +171,22 @@
         <section class="modal-card-body">
           <cmp-form :form="prices" title="Prices">
           </cmp-form>
-          <b-button expanded type="is-primary" outlined
+          <b-button expanded type="is-primary" 
             class="mt-4"
             :disabled="JSON.stringify(prices) == JSON.stringify(poolPrices)"
             @click="setPricesArray(prices), priceModal = false">Изменить</b-button>
+        </section>
+      </div>
+    </b-modal>
+    <b-modal v-model="addNewPriceModal" :width="440">
+      <div class="modal-card modal-content-height" style="width: auto">
+        <section class="modal-card-body">
+          <cmp-form :form="newPrice" title="new price">
+          </cmp-form>
+          <b-button expanded type="is-primary" 
+            class="mt-4"
+            :disabled="this.newPriceBtnDis"
+            @click="addNewPrice(newPrice), addNewPriceModal = false">Добавить</b-button>
         </section>
       </div>
     </b-modal>
@@ -296,7 +314,7 @@
                 </h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="borrowInfo.value" ></b-input>
 
-                <div v-for="(item, index) in borrowInfo.options"
+                <div v-for="(item, index) in pricesOptions"
                     :key="index">
                   <b-radio 
                       v-model="borrowInfo.token"
@@ -347,7 +365,7 @@
                   </b-tooltip>)</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
 
-                <div v-for="(item, index) in mintInfo.options"
+                <div v-for="(item, index) in pricesOptions"
                     :key="index">
                   <b-radio 
                       v-model="mintInfo.token"
@@ -426,7 +444,7 @@
                       </b-tooltip>
                     </h2>
                     
-                    <div v-for="(item, index) in tradeInfo.options"
+                    <div v-for="(item, index) in pricesOptions"
                         :key="index">
                       <b-radio 
                           v-model="tradeInfo.token2"
@@ -763,6 +781,7 @@ export default {
       tickDisble: true,
       tokenModal: false,
       priceModal: false,
+      addNewPriceModal: false,
       createDepositModal: false,
       createDepositInfo: {
         account: 0,
@@ -781,7 +800,6 @@ export default {
         account: 0,
         value: 0,
         token: '',
-        options: config.tokens,
         maxBorrow: 0,
       },
       mintModal: false,
@@ -789,7 +807,6 @@ export default {
         account: 0,
         value: 0,
         token: '',
-        options: config.stable,
         maxMint: 0,
       },
       tradeModal: false,
@@ -799,7 +816,7 @@ export default {
         value2: 0,
         token: '',
         token2: '',
-        options: config.tokens,
+        // options: config.tokens,
         maxMint: 0,
       },
       repayModal: false,
@@ -982,6 +999,9 @@ export default {
       ],
       prices: [
       ],
+      newPrice: [
+      ],
+
       history: [
         
       ],
@@ -991,7 +1011,7 @@ export default {
     ...mapState('accounts', {'accounts': 'items', 'poolAccounts': 'poolAccounts'}),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
     ...mapState('prices', ['poolPrices']),
-    ...mapGetters('prices', ['poolPricesFormat']),
+    ...mapGetters('prices', ['poolPricesFormat', 'pricesOptions']),
     columns(){ 
       return [
         {
@@ -1035,6 +1055,15 @@ export default {
             label: 'prevDay',
         },
       ];
+    },
+    newPriceBtnDis(){
+      let test = false;
+      this.newPrice.forEach(item=>{
+        if(item.value == ''){
+          test = true
+        }
+      })
+      return test
     },
     config(){
       let confog = {}
@@ -1096,6 +1125,20 @@ export default {
         this.poolPrices.forEach(item => {      
           this.prices.push(Object.assign({}, item));
         })
+      }
+    },
+    addNewPriceModal(val){
+      if (val){
+        this.newPrice.push({
+          name: 'name',
+          value: '',
+        })
+        this.newPrice.push({
+          name: 'rate',
+          value: '',
+        })
+      } else {
+        this.newPrice = []
       }
     },
     // pricesFormat(){
@@ -1166,12 +1209,10 @@ export default {
     ...mapActions('accounts', ['updateAccounts', 'addBalanceToAccount']),
     ...mapMutations('prices', ['setPrices']),
     ...mapActions('prices', ['setPricesArray']),
-    Create(){
-      window.oracle.init(config);
-      window.pool.createPool(config);
-      this.setPrices(config.prices)
-    },
 
+    addNewPrice(newPrice){
+      this.setPricesArray([...this.poolPrices, {name: newPrice[0].value, value: newPrice[1].value}])
+    },
     updateResults(){
       let getInfo = window.pool.getInfo(this.poolPricesFormat)
       console.log('getInfo', getInfo);
@@ -1752,7 +1793,9 @@ export default {
 
   },
   created(){
-    this.Create();
+    window.oracle.init(config);
+    window.pool.createPool(config);
+    this.setPrices(config.prices)
   }
 
 }

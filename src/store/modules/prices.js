@@ -11,6 +11,9 @@ export default {
             });
             return price
         },
+        pricesOptions: state => {
+            return state.poolPrices.map(item => item.name);
+        },
 	},
 	mutations: {
         setPrices(state, poolPrices){
