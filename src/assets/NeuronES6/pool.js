@@ -640,7 +640,9 @@ class NeuronPool {
   };
 
   setPrices = (prices) => {
+    // console.log('prices', prices);
     const tokens = this._getTokens();
+    // console.log('tokens', tokens);
     tokens.forEach((t) => {
       if (prices[t]) {
         this.reserves.setPrice(t, prices[t]);
@@ -723,7 +725,6 @@ class NeuronPool {
 
     this._countCapital();
     let fullCapital = this.reserves.getFullCapital();
-
     tokens.forEach((t) => {
       this.reserves.get(t).weight = this.reserves
         .get(t)

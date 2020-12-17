@@ -31,22 +31,18 @@ class Reserves {
   getValue = (name) => this.get(name).value;
   getValueWithBorrows = (name) => this.get(name).value.plus(this.get(name).totalBorrows);
   getPrice = (name) => this.get(name).price;
-  getCapital = (name) => this.get(name).value.times(this.get(name).price);
+  getCapital = (name) => {
+    return this.get(name).value.times(this.get(name).price)
+  };
   getLiquidCapital = () => {
-    let test =  Object.keys(this.all())
-          .map((name) => this.getCapital(name))
-    if (test.length == 0){
-      return new D(0);
-    } 
-    return test.reduce((acc, v) => new D(acc).plus(new D(v)));
+    return Object.keys(this.all())
+      .map((name) => this.getCapital(name))
+      .reduce((acc, v) => new D(acc).plus(new D(v)), new D(0));
   };
   getBorrowedCapital = () => {
-    let test =  Object.keys(this.all())
+    return Object.keys(this.all())
       .map((name) => this.get(name).totalBorrows.times(this.get(name).price))
-    if (test.length == 0){
-      return new D(0);
-    } 
-    return test.reduce((acc, v) => new D(acc).plus(new D(v)));
+      .reduce((acc, v) => new D(acc).plus(new D(v)), new D(0));
   };
   getFullCapital = () => {
     return this.getLiquidCapital().plus(this.getBorrowedCapital());

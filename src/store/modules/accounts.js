@@ -27,9 +27,7 @@ export default {
             return poolAccountsSumm;
         },
         accountAllSumm: (state, getters) => {
-            console.log(getters.accountSumm);
             if (getters.accountSumm.length > 0) {
-                console.log(getters.accountSumm.reduce((accumulator, item) => accumulator + item, 0));
                 return getters.accountSumm.reduce((accumulator, item) => accumulator + item, 0);
             }
             return 0;
@@ -48,7 +46,6 @@ export default {
 	},
 	actions: {
         addBalanceToAccount({state, dispatch}, {i, data, pricesFormat}){
-            console.log( {i, data, pricesFormat} );
             // console.log(state, dispatch);
             if (i != undefined){
                 // console.log('old');

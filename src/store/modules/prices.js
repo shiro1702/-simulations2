@@ -13,7 +13,7 @@ export default {
             return price
         },
         pricesOptions: state => {
-            return state.poolPrices.map(item => item.name);
+            return state.poolPrices.map(item => item.name).filter(x => !state.stable.includes(x));
         },
 	},
 	mutations: {
