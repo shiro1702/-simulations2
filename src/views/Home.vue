@@ -1090,17 +1090,6 @@ export default {
         parseFloat(this.createDepositInfo.value) <= parseFloat( this.poolAccounts[this.createDepositInfo.account].balance[this.createDepositInfo.token].toString() )
       )
     },
-    // returnDepositBtn(){
-    //   const index = this.returnDepositInfo.options.findIndex(item=>{
-    //     return item.name == this.returnDepositInfo.token
-    //   })
-    //   return !(
-    //     this.returnDepositInfo.token != '' && 
-    //     parseFloat(this.returnDepositInfo.value) > 0 && 
-    //     this.returnDepositInfo.options[index] &&
-    //     parseFloat(this.returnDepositInfo.value) <= parseFloat( this.returnDepositInfo.options[index].value )
-    //   )
-    // },
     createTradeBtn(){
       return !(
         this.tradeInfo.token != '' && 
@@ -1120,9 +1109,6 @@ export default {
     },
   },
   watch: {
-    // accountsChecked(){
-    //   this.AccountUpdate();
-    // },
     config(val){
       window.pool.createPool({...val, prices: this.poolPricesFormat} );
       window.oracle.init({...val, prices: this.poolPricesFormat}  );
@@ -1167,9 +1153,6 @@ export default {
         this.checkboxNewPrice = false;
       }
     },
-    // pricesFormat(){
-    //   this.updateResults();
-    // },
     history(){
       this.$refs.history.scrollTo({
         top: this.$refs.history.scrollHeight,
@@ -1244,7 +1227,6 @@ export default {
     },
     updateResults(){
       let getInfo = window.pool.getInfo(this.poolPricesFormat)
-      console.log('getInfo', getInfo);
       this.capital = getInfo.capital.toString();
       this.table = [];
       let reserves = getInfo.reserves;
@@ -1655,7 +1637,6 @@ export default {
     },
     setRepayAccountInfo(accountIndex){
       let account = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex];
-      // account
       this.repayInfo.borrows = []
       for (const key in account.borrows) {
         if (Object.prototype.hasOwnProperty.call(account.borrows, key)) {
@@ -1701,7 +1682,6 @@ export default {
       this.updateResults();
     },
     setMaxLiquidate(accountId, token){
-      // this.liquidateInfo.maxLiquidate = window.pool.getLiqudationMax(accountId, token).toString();
       let maxL = window.pool.getInfo(this.poolPricesFormat).accounts[accountId]?.borrows[token]?.value.toString()
       this.liquidateInfo.maxLiquidate = maxL?maxL:0;
       this.liquidateInfo.value = this.liquidateInfo.maxLiquidate.toString();
@@ -1748,18 +1728,7 @@ export default {
       }
       this.updateResults();
     },
-    // setLiquidateccountInfo(accountIndex){
-    //   let account = window.pool.getInfo(this.pricesFormat).accounts[accountIndex];
-    //   console.log(account.borrows);
-    //   console.log(account.borrows.value.toString());
-    //   // account
-    //   this.liquidateInfo.depositsToken = account.deposits
-    //   this.liquidateInfo.deposits = account.deposits.toString();
-    //   this.liquidateInfo.sumCollateral = account.sumCollateral.toString();
-    //   this.liquidateInfo.sumBorrowPlusEffects = account.sumBorrowPlusEffects.toString();
-    // },
     setMaxToMint(accountId, token){
-      // console.log('setMaxToMint');
       this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token).toString();
       this.mintInfo.value = this.mintInfo.maxMint;
     },
@@ -1775,7 +1744,6 @@ export default {
       this.tradeInfo.value = this.poolAccounts[account].balance[token].toString();
     },
     setTradeOptions(account){
-      // this.tradeInfo.token = poolAccounts[tradeInfo.account].balance;
       const balance = this.poolAccounts[account].balance;
       let test = true;
       for (let key in balance) {
@@ -1786,13 +1754,10 @@ export default {
       }
     },
     setTradeResult(account, token, token2, value ){
-      // console.log(account, [`${token}/${token2}`, parseFloat(value)]);
       const trade1 = window.pool.tradePool(account, [`${token}/${token2}`, parseFloat(value)], 1);
-      // console.log(trade1);
       this.tradeInfo.value2 = trade1.value.toString()
     },
     trade(tradeInfo){
-      // console.log(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
       this.updateResults();
       this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value.toString()}`)
@@ -1802,7 +1767,6 @@ export default {
   created(){
     window.oracle.init(config);
     window.pool.createPool(config);
-    // console.log(config.prices);
     this.setPrices(config.prices);
     this.addStable('sUSD');
     this.form1.forEach((item, index) => {
