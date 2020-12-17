@@ -390,7 +390,11 @@ class NeuronPool {
     );
     if (value <= 0) {
       console.log("Attempt to trade zero or negative value");
-      return { value: 0, name: outToken };
+      return { value: new D(0), name: outToken };
+    }
+    if (outAmount.isNaN()) {
+      console.log("Deposit not enough");
+      return { value: new D(0), name: outToken };
     }
     const output = { value: outAmount, name: outToken };
     if (!dry) {
