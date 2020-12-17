@@ -368,7 +368,7 @@
                   </b-tooltip>)</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
 
-                <div v-for="(item, index) in pricesOptions"
+                <div v-for="(item, index) in stable"
                     :key="index">
                   <b-radio 
                       v-model="mintInfo.token"
@@ -1764,7 +1764,7 @@ export default {
       this.mintInfo.value = this.mintInfo.maxMint;
     },
     setMintOptions(){
-      this.mintInfo.token = this.mintInfo.options[0];
+      this.mintInfo.token = this.stable[0];
     },
     mint(mintInfo){
       window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: parseFloat(mintInfo.value) });
