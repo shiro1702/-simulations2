@@ -393,7 +393,7 @@ class NeuronPool {
       return { value: new D(0), name: outToken };
     }
     if (outAmount.isNaN()) {
-      console.log("Deposit not enough");
+      // console.log("Deposit not enough");
       return { value: new D(0), name: outToken };
     }
     const output = { value: outAmount, name: outToken };
@@ -728,12 +728,15 @@ class NeuronPool {
     }
 
     this._countCapital();
-    let fullCapital = this.reserves.getFullCapital();
+    const fullCapital = this.reserves.getFullCapital();
+
     tokens.forEach((t) => {
-      this.reserves.get(t).weight = this.reserves
-        .get(t)
-        .capital.times(100)
-        .div(fullCapital);
+      this.reserves.get(t).weight = fullCapital.isZero() 
+        ? new D(0) 
+        : this.reserves
+            .get(t)
+            .capital.times(100)
+            .div(fullCapital);
     });
     return true;
   };
@@ -796,7 +799,7 @@ class NeuronPool {
     // alternative from compound
     // https://github.com/compound-finance/compound-protocol/blob/master/contracts/CToken.sol#L350
     const reserve = this.reserves.get(name);
-    return this.sTokens[name]
+    return this.sTokens[name] && !this.sTokens[name].isZero()
       ? reserve.value.plus(reserve.totalBorrows).div(this.sTokens[name])
       : new D(0);
   };
