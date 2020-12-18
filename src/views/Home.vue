@@ -3,6 +3,36 @@
     <div class="columns fullHeight">
       <div class="column">
         <cmp-form :form="form1" title="Пул">
+          <template v-slot:header>
+            <b-field :label="'tokens:'"
+                horizontal>
+              <div class="is-flex is-align-items-center">
+                <v-select class="is-flex-grow-2" multiple v-model="pricesValue" :options="pricesOptions" />
+                <b-tooltip
+                    class="control ml-2"
+                    :label="'Изменить список токенов в пуле'" 
+                    multilined>
+                  <b-icon
+                      icon="help-circle-outline">
+                  </b-icon>
+                </b-tooltip>
+              </div>
+            </b-field>
+            <b-field :label="'stable:'"
+                horizontal>
+              <div class="is-flex is-align-items-center">
+                <v-select class="is-flex-grow-2" multiple v-model="stableValue" :options="stable" />
+                <b-tooltip
+                    class="control ml-2"
+                    :label="'Изменить список стейбл коинов в пуле'" 
+                    multilined>
+                  <b-icon
+                      icon="help-circle-outline">
+                  </b-icon>
+                </b-tooltip>
+              </div>
+            </b-field>
+          </template>
         </cmp-form>
         <b-field label="prices:"
             grouped group-multiline>
@@ -317,7 +347,7 @@
                 </h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="borrowInfo.value" ></b-input>
 
-                <div v-for="(item, index) in pricesOptions"
+                <div v-for="(item, index) in pricesValue"
                     :key="index">
                   <b-radio 
                       v-model="borrowInfo.token"
@@ -368,7 +398,7 @@
                   </b-tooltip>)</h2>
                 <b-input type="number" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
 
-                <div v-for="(item, index) in stable"
+                <div v-for="(item, index) in stableChecked"
                     :key="index">
                   <b-radio 
                       v-model="mintInfo.token"
@@ -447,7 +477,7 @@
                       </b-tooltip>
                     </h2>
                     
-                    <div v-for="(item, index) in pricesOptions"
+                    <div v-for="(item, index) in pricesValue"
                         :key="index">
                       <b-radio 
                           v-model="tradeInfo.token2"
@@ -820,7 +850,6 @@ export default {
         value2: 0,
         token: '',
         token2: '',
-        // options: config.tokens,
         maxMint: 0,
       },
       repayModal: false,
@@ -870,18 +899,18 @@ export default {
         token2: '',
       },
       form1: [
-        {
-          name: 'tokens',
-          value: config.tokens,
-          options: [],
-          tooltip: 'Изменить список токенов в пуле',
-        },
-        {
-          name: 'stable',
-          value: config.stable,
-          options: [],
-          tooltip: 'Изменить список стейбл коинов в пуле',
-        },
+        // {
+        //   name: 'tokens',
+        //   value: config.tokens,
+        //   options: [],
+        //   tooltip: 'Изменить список токенов в пуле',
+        // },
+        // {
+        //   name: 'stable',
+        //   value: config.stable,
+        //   options: [],
+        //   tooltip: 'Изменить список стейбл коинов в пуле',
+        // },
         {
           name: 'tradeFee',
           value: config.tradeFee,
@@ -916,95 +945,6 @@ export default {
         },
       ],
       table: [],
-      credit: [
-        {
-          name: 'tokens loan',
-          value: [],
-          options: [
-            "BTC",
-            "ETH",
-            "USDT",
-            "EOS",
-            "NEO",
-            "MKR",
-            "XRP"
-          ],
-          tooltip: `Просмотреть и изменить
-            список монет, которые 
-            принимаются в качестве 
-            депозита под обеспечение 
-            займа`,
-        },
-        {
-          name: 'tokens dep',
-          value: [],
-          options: [
-            "BTC",
-            "ETH",
-            "USDT",
-            "EOS",
-            "NEO",
-            "MKR",
-            "XRP"
-          ],
-          tooltip: `Просмотреть и изменить
-            список монет которые
-            принимаются в качестве 
-            депозита под обеспечение 
-            займа`,
-        },
-        {
-          name: 'minimum ratio:',
-          value: '',
-        },
-        {
-          name: 'liquidation penalty',
-          value: '',
-        },
-        {
-          name: 'stability fee',
-          value: '',
-        },
-        {
-          name: 'кол-во займов',
-          value: '',
-        },
-        {
-          name: 'процент возврата',
-          value: '',
-        },
-      ],
-      bargaining:  [
-        {
-          name: 'tokens',
-          value: [],
-          options: [
-            "BTC",
-            "ETH",
-            "USDT",
-            "EOS",
-            "NEO",
-            "MKR",
-            "XRP"
-          ],
-          tooltip: `Просмотреть и изменить
-            список монет которые
-            могут участвовать в 
-            торгах`,
-        },
-        {
-          name: 'fee',
-          value: '',
-        },
-        {
-          name: 'baseRate',
-          value: '',
-        },
-        {
-          name: 'кол-во торгов',
-          value: '',
-        },
-      ],
       prices: [
       ],
       newPrice: [
@@ -1018,8 +958,24 @@ export default {
   computed: {
     ...mapState('accounts', {'poolAccounts': 'poolAccounts'}),
     ...mapGetters('accounts', {'accountsChecked': 'itemsChecked'}),
-    ...mapState('prices', ['poolPrices', 'stable']),
+    ...mapState('prices', ['poolPrices', 'stable', 'pricesOptionsChecked', 'stableChecked']),
     ...mapGetters('prices', ['poolPricesFormat', 'pricesOptions']),
+    pricesValue: {
+      get(){
+        return this.pricesOptionsChecked
+      },
+      set(newValue){
+        this.setPricesOptionsChecked(newValue)
+      }
+    },
+    stableValue: {
+      get(){
+        return this.stableChecked
+      },
+      set(newValue){
+        this.setStableChecked(newValue)
+      }
+    },
     columns(){ 
       return [
         {
@@ -1078,6 +1034,8 @@ export default {
       this.form1.forEach(item => {
         configLocal[item.name] = item.value;
       });
+      configLocal.tokens = this.pricesOptionsChecked;
+      configLocal.stable = this.stableChecked;
       return configLocal
     },
     createDepositBtn(){
@@ -1110,8 +1068,14 @@ export default {
   },
   watch: {
     config(val){
-      window.pool.createPool({...val, prices: this.poolPricesFormat} );
-      window.oracle.init({...val, prices: this.poolPricesFormat}  );
+      window.pool.createPool({
+        ...val, 
+        prices: this.poolPricesFormat
+      });
+      window.oracle.init({
+        ...val, 
+        prices: this.poolPricesFormat
+      });
     },
     priceModal(val){
       if (val){
@@ -1122,22 +1086,22 @@ export default {
         this.prices = [];
       }
     },
-    pricesOptions(val){
-      this.form1.forEach((item, index) => {
-        if (item.name == 'tokens') {
-          this.$set(this.form1, index, Object.assign({}, this.form1[index], { options: val }))
-          // this.form1[index] = Object.assign({}, this.form1[index], { options: val.filter(x => !this.stable.includes(x)) })
-        }
-      })
-    },
-    stable(val){
-      this.form1.forEach((item, index) => {
-        if (item.name == 'stable') {
-          this.$set(this.form1, index, Object.assign({}, this.form1[index], { options: val }))
-          // this.form1[index] = Object.assign({}, this.form1[index], { options: val })
-        }
-      })
-    },
+    // pricesOptions(val){
+    //   this.form1.forEach((item, index) => {
+    //     if (item.name == 'tokens') {
+    //       this.$set(this.form1, index, Object.assign({}, this.form1[index], { options: val }))
+    //       // this.form1[index] = Object.assign({}, this.form1[index], { options: val.filter(x => !this.stable.includes(x)) })
+    //     }
+    //   })
+    // },
+    // stable(val){
+    //   this.form1.forEach((item, index) => {
+    //     if (item.name == 'stable') {
+    //       this.$set(this.form1, index, Object.assign({}, this.form1[index], { options: val }))
+    //       // this.form1[index] = Object.assign({}, this.form1[index], { options: val })
+    //     }
+    //   })
+    // },
     addNewPriceModal(val){
       if (val){
         this.newPrice.push({
@@ -1216,9 +1180,8 @@ export default {
   },
   methods: {
     ...mapActions('accounts', ['updateAccounts', 'addBalanceToAccount']),
-    ...mapMutations('prices', ['setPrices', 'addStable']),
+    ...mapMutations('prices', ['setPrices', 'setPricesOptionsChecked', 'addStable', 'setStableChecked', 'setPricesOptionsChecked']),
     ...mapActions('prices', ['setPricesArray']),
-
     addNewPrice(newPrice){
       this.setPricesArray([...this.poolPrices, {name: newPrice[0].value, value: newPrice[1].value}])
       if (this.checkboxNewPrice){
@@ -1277,15 +1240,15 @@ export default {
       this.updateResults();
       this.history.push('pool tick');
     },
-    simulationTick(callback, data){
-      this.simulationTickTimer++;
-      setTimeout(()=>{  
-        // console.log(callback, data);
-        callback(data)
-      }, this.simulationTickTimer * 100)
-      // console.log(this.simulationTickTimer * 100);
-    },
-    simulationTickData(callback, data, dataGet){
+    // simulationTick(callback, data){
+    //   this.simulationTickTimer++;
+    //   setTimeout(()=>{  
+    //     // console.log(callback, data);
+    //     callback(data)
+    //   }, this.simulationTickTimer * 100)
+    //   // console.log(this.simulationTickTimer * 100);
+    // },
+    simulationTick(callback, data, dataGet = {}){
       this.simulationTickTimer++;
       setTimeout(()=>{  
         let newData ={}
@@ -1298,53 +1261,62 @@ export default {
       }, this.simulationTickTimer * 100)
     },
     simulationEnd(val){
-      this.isLoading = val;
+      this.isLoading = val.state;
     },
+    testObjKeysInPrice(data){
+      let data1Test = {}
+      for (let key in data) {
+        if ( this.pricesOptionsChecked.includes(key)) {
+          data1Test[key] = data[key]
+        }
+      }
+      return data1Test;
+    },
+
     simulation(){
       this.isLoading = true;
-
       const arr2 = [0, 1, 2, 3, 4];
       if (this.simulationAccountStart == 0){
         this.simulationAccountStart = this.poolAccounts.length;
       }
+
       this.simulationTick(this.addBalanceToAccount, { 
         i: 0 + this.simulationAccountStart,
-        data: {
+        data: this.testObjKeysInPrice({
           BTC: 10,
           ETH: 200,
-        }, 
+        }),
         pricesFormat: {...this.poolPricesFormat}
       })
 
-
       this.simulationTick(this.addBalanceToAccount, { 
         i: 1 + this.simulationAccountStart,
-        data: {
+        data: this.testObjKeysInPrice({
           BTC: 20,
           EOS: 180,
-        }, 
+        }), 
         pricesFormat: this.poolPricesFormat
       })
 
       this.simulationTick(this.addBalanceToAccount, { 
         i: 2 + this.simulationAccountStart,
-        data: {
+        data: this.testObjKeysInPrice({
           ETH: 180,
           USDT: 20,
-        }, 
+        }), 
         pricesFormat: this.poolPricesFormat
       })
 
       this.simulationTick(this.addBalanceToAccount, { 
         i: 3 + this.simulationAccountStart,
-        data: {
+        data: this.testObjKeysInPrice({
           BTC: 20,
           EOS: 2200,
           USDT: 210,
-        }, 
+        }), 
         pricesFormat: this.poolPricesFormat
       })
-
+      
       this.simulationTick(this.createDeposit, { 
         account: 0 + this.simulationAccountStart,
         token: "BTC",
@@ -1501,7 +1473,7 @@ export default {
         this.simulationTick(this.nextTick, { 
         })
       });
-      this.simulationTickData(
+      this.simulationTick(
         this.repay, 
         { 
           account: 0 + this.simulationAccountStart,
@@ -1512,7 +1484,7 @@ export default {
         }
       );
 
-      this.simulationTickData(
+      this.simulationTick(
         this.liquidate, 
         { 
           account: 1 + this.simulationAccountStart,
@@ -1544,7 +1516,7 @@ export default {
         value: 300,
       });
 
-      this.simulationTick(this.simulationEnd, false);
+      this.simulationTick(this.simulationEnd, {state: false});
       // console.log('test');
       // this.simulationTick(()=>{
       //   this.isLoading = false;
@@ -1566,10 +1538,11 @@ export default {
       this.createDepositInfo.value = this.poolAccounts[this.createDepositInfo.account].balance[val].toString();
     },
     createDeposit(createDepositInfo){
-      window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: parseFloat(createDepositInfo.value) });
-      this.updateResults();
-
-      this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
+      if (this.pricesOptionsChecked.includes(createDepositInfo.token )){
+        window.pool.deposit(createDepositInfo.account, { name: createDepositInfo.token, value: parseFloat(createDepositInfo.value) });
+        this.updateResults();
+        this.history.push(`создан депозит для аккаунта №${createDepositInfo.account + 1} на сумму ${createDepositInfo.token} ${createDepositInfo.value}`);
+      }
     },
     setReturnOptionToDeposit(val){
       let deposits= window.pool.accounts.get(val).deposits;
@@ -1586,17 +1559,19 @@ export default {
       this.$set( this.returnDepositInfo, 'value', options[0].value )
     },
     returnDeposit(returnDepositInfo){
-      const test = window.pool.redeem(returnDepositInfo.account, returnDepositInfo.token, parseFloat(returnDepositInfo.value) );
-      this.updateResults();
-      if (test.error) {
-        this.$buefy.toast.open({
-          message: `Ошибка вывода средств! ${test.error.message}`,
-          type: 'is-danger'
-        })
-        this.history.push(`ошибка возврата депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
-      } else {
-        this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
-      }
+      if (this.pricesOptionsChecked.includes(returnDepositInfo.token )){
+        const test = window.pool.redeem(returnDepositInfo.account, returnDepositInfo.token, parseFloat(returnDepositInfo.value) );
+        this.updateResults();
+        if (test.error) {
+          this.$buefy.toast.open({
+            message: `Ошибка вывода средств! ${test.error.message}`,
+            type: 'is-danger'
+          })
+          this.history.push(`ошибка возврата депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
+        } else {
+          this.history.push(`возврат депозита для аккаунта №${returnDepositInfo.account + 1} на сумму ${returnDepositInfo.token} ${returnDepositInfo.value}`);
+        }
+        }
     },
     setReturnOptions(){
       this.borrowInfo.token = this.borrowInfo.options[0];
@@ -1608,32 +1583,36 @@ export default {
       this.borrowInfo.value = this.borrowInfo.maxBorrow;
     },
     borrow(borrowInfo){
-      const test = window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: parseFloat(borrowInfo.value) });
-      this.updateResults();
-      if (!test){
-        this.$buefy.toast.open({
-          message: `Ошибка! Не достаточно средств в Пуле`,
-          type: 'is-danger'
-        })
-        this.history.push(`не удачная попытка аккаунта №${borrowInfo.account + 1} взять займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
-      } else {
+      if (this.pricesOptionsChecked.includes(borrowInfo.token)){
+        const test = window.pool.borrow(borrowInfo.account, { name: borrowInfo.token, borrowAmount: parseFloat(borrowInfo.value) });
+        this.updateResults();
+        if (!test){
+          this.$buefy.toast.open({
+            message: `Ошибка! Не достаточно средств в Пуле`,
+            type: 'is-danger'
+          })
+          this.history.push(`не удачная попытка аккаунта №${borrowInfo.account + 1} взять займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+        } else {
 
-        this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+          this.history.push(`аккаунт №${borrowInfo.account + 1} взял займ на сумму ${borrowInfo.token} ${borrowInfo.value}`);
+        }
       }
     },
     repay(repayInfo){
-      const test = window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
-
-      if (test){
-        this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
-      } else {
-        this.$buefy.toast.open({
-          message: `Ошибка! Возврат займа не прошёл!`,
-          type: 'is-danger'
-        })
-        this.history.push(`Не удачная попытка вернуть займ аккаунта №${repayInfo.account + 1} на сумму ${repayInfo.token} ${repayInfo.value}`);
-      }      
-      this.updateResults();
+      // console.log( Object.keys(window.pool.getInfo(this.poolPricesFormat).accounts[repayInfo.account].borrows) );
+      if (Object.keys(window.pool.getInfo(this.poolPricesFormat).accounts[repayInfo.account].borrows).includes(repayInfo.token )){
+        const test = window.pool.repay(repayInfo.account, repayInfo.token, parseFloat(repayInfo.value));
+        if (test){
+          this.history.push(`аккаунт №${repayInfo.account + 1} вернул займ на сумму ${repayInfo.token} ${repayInfo.value}`);
+        } else {
+          this.$buefy.toast.open({
+            message: `Ошибка! Возврат займа не прошёл!`,
+            type: 'is-danger'
+          })
+          this.history.push(`Не удачная попытка вернуть займ аккаунта №${repayInfo.account + 1} на сумму ${repayInfo.token} ${repayInfo.value}`);
+        }      
+        this.updateResults();
+      }
     },
     setRepayAccountInfo(accountIndex){
       let account = window.pool.getInfo(this.poolPricesFormat).accounts[accountIndex];
@@ -1669,17 +1648,19 @@ export default {
       this.repayStableInfo.value = window.pool.getInfo(this.poolPricesFormat).accounts[account].borrows[token].value.toString();
     },
     repayStable(repayStableInfo){
-      const test = window.pool.burn(repayStableInfo.account, repayStableInfo.token, parseFloat(repayStableInfo.value));
-      if (test){
-        this.history.push(`аккаунт №${repayStableInfo.account + 1} вернул стейбл коины на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
-      } else {
-        this.$buefy.toast.open({
-          message: `Ошибка! Возврат стейбл коинов не прошёл!`,
-          type: 'is-danger'
-        })
-        this.history.push(`Не удачная попытка вернуть стейбл коины аккаунта №${repayStableInfo.account + 1} на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
-      }      
-      this.updateResults();
+      if (this.stableChecked.includes(repayStableInfo.token )){
+        const test = window.pool.burn(repayStableInfo.account, repayStableInfo.token, parseFloat(repayStableInfo.value));
+        if (test){
+          this.history.push(`аккаунт №${repayStableInfo.account + 1} вернул стейбл коины на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
+        } else {
+          this.$buefy.toast.open({
+            message: `Ошибка! Возврат стейбл коинов не прошёл!`,
+            type: 'is-danger'
+          })
+          this.history.push(`Не удачная попытка вернуть стейбл коины аккаунта №${repayStableInfo.account + 1} на сумму ${repayStableInfo.token} ${repayStableInfo.value}`);
+        }      
+        this.updateResults();
+      }
     },
     setMaxLiquidate(accountId, token){
       let maxL = window.pool.getInfo(this.poolPricesFormat).accounts[accountId]?.borrows[token]?.value.toString()
@@ -1696,9 +1677,12 @@ export default {
       this.liquidateInfo.token2 = this.liquidateInfo.options[0];
     },
     liquidate(liquidateInfo){
-      window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);
-      this.updateResults();
-      this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}`);
+      if (this.pricesOptionsChecked.includes(liquidateInfo.token) &&
+        this.pricesOptionsChecked.includes(liquidateInfo.token2)){
+        window.pool.liquidate(liquidateInfo.account, liquidateInfo.token, parseFloat(liquidateInfo.value), liquidateInfo.token2, liquidateInfo.account2);
+        this.updateResults();
+        this.history.push(`аккаунт №${liquidateInfo.account2 + 1} ликвидировал займ ${ liquidateInfo.token2} на сумму ${liquidateInfo.token} ${liquidateInfo.value} аккаунту №${liquidateInfo.account + 1}`);
+      }
     },
     setMaxLiquidateStable(accountId, token){
       let maxL = window.pool.getInfo(this.poolPricesFormat).accounts[accountId]?.borrows[token]?.value.toString();
@@ -1716,29 +1700,36 @@ export default {
       this.liquidateStableInfo.token2 = this.liquidateStableInfo.options[0]
     },
     liquidateS(liquidateStableInfo){
-      const test = window.pool.liquidateStable(liquidateStableInfo.account, liquidateStableInfo.token, parseFloat(liquidateStableInfo.value), liquidateStableInfo.token2, liquidateStableInfo.account2);
-      if (test) {
-        this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
-      } else {
-        this.$buefy.toast.open({
-          message: `Ошибка! Стейбл коины не ликвидированы!`,
-          type: 'is-danger'
-        })
-        this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} НЕ ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
+      if (
+        this.stableChecked.includes(liquidateStableInfo.token) && 
+        this.pricesOptionsChecked.includes(liquidateStableInfo.token2)
+      ){
+        const test = window.pool.liquidateStable(liquidateStableInfo.account, liquidateStableInfo.token, parseFloat(liquidateStableInfo.value), liquidateStableInfo.token2, liquidateStableInfo.account2);
+        if (test) {
+          this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
+        } else {
+          this.$buefy.toast.open({
+            message: `Ошибка! Стейбл коины не ликвидированы!`,
+            type: 'is-danger'
+          })
+          this.history.push(`аккаунт №${liquidateStableInfo.account2 + 1} НЕ ликвидировал стейбл коинов ${ liquidateStableInfo.token2} на сумму ${liquidateStableInfo.token} ${liquidateStableInfo.value} аккаунту №${liquidateStableInfo.account + 1}`);
+        }
+        this.updateResults();
       }
-      this.updateResults();
     },
     setMaxToMint(accountId, token){
       this.mintInfo.maxMint = window.pool.getMaxMint(accountId, token).toString();
       this.mintInfo.value = this.mintInfo.maxMint;
     },
     setMintOptions(){
-      this.mintInfo.token = this.stable[0];
+      this.mintInfo.token = this.stableChecked[0];
     },
     mint(mintInfo){
-      window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: parseFloat(mintInfo.value) });
-      this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
-      this.updateResults();
+      if (this.stableChecked.includes(mintInfo.token )){
+        window.pool.mint(mintInfo.account, { name: mintInfo.token, borrowAmount: parseFloat(mintInfo.value) });
+        this.history.push(`аккаунт №${mintInfo.account + 1} выпустил стейбл коины на сумму ${mintInfo.token} ${mintInfo.value}`);
+        this.updateResults();
+      }
     },
     setTradeValue(account, token){
       this.tradeInfo.value = this.poolAccounts[account].balance[token].toString();
@@ -1758,10 +1749,19 @@ export default {
       this.tradeInfo.value2 = trade1.value.toString()
     },
     trade(tradeInfo){
-      const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
-      this.updateResults();
-      this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value.toString()}`)
-      this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value.toString()})`);
+      if ( (
+            this.stableChecked.includes(tradeInfo.token) || 
+            this.pricesOptionsChecked.includes(tradeInfo.token) 
+          ) && ( 
+            this.pricesOptionsChecked.includes(tradeInfo.token2) || 
+            this.stableChecked.includes(tradeInfo.token2)
+          )
+        ){
+        const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
+        this.updateResults();
+        this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value.toString()}`)
+        this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value.toString()})`);
+      }
     },
   },
   created(){
@@ -1769,16 +1769,19 @@ export default {
     window.pool.createPool(config);
     this.setPrices(config.prices);
     this.addStable('sUSD');
-    this.form1.forEach((item, index) => {
-      if (item.name == 'tokens') {
-        this.$set(this.form1, index, Object.assign({}, this.form1[index], { value: this.pricesOptions }))
-      }
-    })
-    this.form1.forEach((item, index) => {
-      if (item.name == 'stable') {
-        this.$set(this.form1, index, Object.assign({}, this.form1[index], { value: this.stable.filter(() => true) }))
-      }
-    })
+    this.setPricesOptionsChecked(this.pricesOptions);
+    this.setStableChecked(config.stable);
+
+    // this.form1.forEach((item, index) => {
+    //   if (item.name == 'tokens') {
+    //     this.$set(this.form1, index, Object.assign({}, this.form1[index], { value: this.pricesOptions }))
+    //   }
+    // })
+    // this.form1.forEach((item, index) => {
+    //   if (item.name == 'stable') {
+    //     this.$set(this.form1, index, Object.assign({}, this.form1[index], { value: this.stable.filter(() => true) }))
+    //   }
+    // })
   }
 }
 </script>

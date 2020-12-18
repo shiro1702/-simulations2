@@ -2,7 +2,9 @@ export default {
 	namespaced: true,
 	state: {
         poolPrices: [],
+        pricesOptionsChecked: [],
         stable: [],
+        stableChecked: [],
 	},
 	getters: {
         poolPricesFormat: state => {
@@ -35,6 +37,12 @@ export default {
         },
         addStable(state, stable){
             state.stable.push(stable);
+        },
+        setPricesOptionsChecked(state, tokens){
+            state.pricesOptionsChecked = tokens;
+        },
+        setStableChecked(state, stables){
+            state.stableChecked = stables;
         },
 	},
 	actions: {

@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapGetters } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 export default {
   props: ['title', 'i', 'pricesFormat'],
   data() {
@@ -59,7 +59,7 @@ export default {
   },
   computed: {
     ...mapState('accounts', {'accounts': 'items', 'poolAccounts':'poolAccounts' }),
-    ...mapGetters('prices', ['pricesOptions']),
+    ...mapState('prices', ['pricesOptionsChecked']),
     currentAccountFormat(){
       let balance = {};
       this.currentAccount.forEach(item2 => {
@@ -70,7 +70,8 @@ export default {
       return balance
     },
     defaultAccount(){ 
-      return this.pricesOptions.map(item => {
+      console.log(this.pricesOptionsChecked);
+      return this.pricesOptionsChecked.map(item => {
         return {
           name: item,
           value: 100,

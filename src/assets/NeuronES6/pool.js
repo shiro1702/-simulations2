@@ -67,6 +67,10 @@ class NeuronPool {
   };
 
   redeem = (accountId, name, share, minReturn = 0, force = false) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     this._updateIndexes(name);
     const deposit = this.accounts.getDeposit(accountId, name);
     if (!deposit || deposit.share.lessThan(share))
@@ -76,17 +80,17 @@ class NeuronPool {
         specifiedShare: share,
       };
 
-      if (force === false) {
-        const [_, shortfall] = this._checkBorrow(accountId, name, 0, share);
-        
-        if (shortfall > 0) {
-          return {
-            error: {
-              message: "not enough collateral",
-            },
-          };
-        }
+    if (force === false) {
+      const [_, shortfall] = this._checkBorrow(accountId, name, 0, share);
+      
+      if (shortfall > 0) {
+        return {
+          error: {
+            message: "not enough collateral",
+          },
+        };
       }
+    }
 
     const output = this._liquidateShareAmount(share, name);
     if (output.value.lessThan(minReturn))
@@ -130,6 +134,10 @@ class NeuronPool {
   };
 
   redeemAll = (accountId, name, minReturn = 0, force = false) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     const deposit = this.accounts.getDeposit(accountId, name);
     if (!deposit || deposit.share.equals(0))
       return { error: { message: "deposit not found" } };
@@ -138,6 +146,12 @@ class NeuronPool {
 
   deposit = (accountId, input) => {
     const { name, value } = input;
+
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+
     if (this.accounts.subBalance(accountId, name, value) !== true) {
       console.log("Insifficient balance for deposit");
       return { name: "x" + name, value: 0 };
@@ -164,6 +178,12 @@ class NeuronPool {
 
   borrow = (accountId, input) => {
     const { name, borrowAmount } = input;
+
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+
     this._updateIndexes(name);
     const [_, shortfall] = this._checkBorrow(accountId, name, borrowAmount, 0);
     const reserve = this.reserves.get(name);
@@ -201,6 +221,11 @@ class NeuronPool {
   mint = (accountId, input) => {
     const { name, borrowAmount } = input;
 
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
       return false;
@@ -237,6 +262,10 @@ class NeuronPool {
   };
 
   burn = (accountId, name, repayAmount) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
       return false;
@@ -252,7 +281,7 @@ class NeuronPool {
 
     // TODO: fee on transaction
     const actualRepayAmount = repayAmount;
-    
+
     if (accountBorrows.lessThan(actualRepayAmount)) {
       console.log("repay amount greater then borrow");
       return false;
@@ -275,6 +304,10 @@ class NeuronPool {
   };
 
   liquidateStable = (borrower, name, repayAmount, collateralName, payer) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
       return false;
@@ -366,6 +399,10 @@ class NeuronPool {
   };
 
   getMaxMint = (accountId, name) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     if (this.config.stable.indexOf(name) === -1) {
       console.log("this token is not stable");
       return new D(0);
@@ -382,6 +419,16 @@ class NeuronPool {
     const inputSum = new D(value).minus(inputFee);
     const inToken = direction.split("/")[0];
     const outToken = direction.split("/")[1];
+
+    if (this._getTokens().indexOf(inToken) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+    if (this._getTokens().indexOf(outToken) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+
     const outAmount = this._getOutAmount(
       inputSum,
       inToken,
@@ -432,6 +479,16 @@ class NeuronPool {
     const inputSum = new D(value).minus(inputFee);
     const inToken = direction.split("/")[0];
     const outToken = direction.split("/")[1];
+
+    if (this._getTokens().indexOf(inToken) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+    if (this._getTokens().indexOf(outToken) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
+
     const outAmount = this._getOutAmount(
       inputSum,
       inToken,
@@ -479,6 +536,10 @@ class NeuronPool {
   };
 
   repay = (borrower, name, repayAmount) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     this._updateIndexes(name);
     // TODO: repayBorrowAllowed
     const reserve = this.reserves.get(name);
@@ -513,6 +574,10 @@ class NeuronPool {
   };
 
   liquidate = (borrower, name, repayAmount, collateralName, payer) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     this._updateIndexesAll();
     const liqAllowed = this._liquidateBorrowAllowed(borrower, name);
 
@@ -577,6 +642,10 @@ class NeuronPool {
   };
 
   getMaxBorrow = (accountId, name) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     const [sumLiquidity] = this._checkBorrow(accountId, name, 0, 0);
     const oraclePrice = this.reserves.get(name).price;
     return new D(sumLiquidity).div(oraclePrice);
@@ -777,6 +846,10 @@ class NeuronPool {
   };
 
   getLiqudationMax = (id, name) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     return this._liquidateBorrowAllowed(id, name);
   };
 
@@ -796,6 +869,10 @@ class NeuronPool {
   };
 
   _getExchangeRate = (name) => {
+    if (this._getTokens().indexOf(name) === -1) {
+      console.log("token not allowed");
+      return false;
+    }
     // alternative from compound
     // https://github.com/compound-finance/compound-protocol/blob/master/contracts/CToken.sol#L350
     const reserve = this.reserves.get(name);
