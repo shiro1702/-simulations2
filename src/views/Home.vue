@@ -123,10 +123,17 @@
             <b-button expanded type="is-primary" outlined
             @click="liquidateStableModal = true">Ликвидация стейбл</b-button>
           </div>
-<!--           
-          <div class="column is-half">
-            <b-button expanded type="is-danger" outlined>Сброс</b-button>
-          </div> -->
+
+          <b-field v-for="(item, key) in currentPrices" :label="key"
+              :key="'currentPrices' + key"
+              grouped group-multiline>
+            <div v-for="(item2, key2) in item" :key="'currentPrices' + key + key2" class="control">
+              <b-taglist attached>
+                <b-tag type="is-primary is-light" size="is-medium">{{key2}}</b-tag>
+                <b-tag type="is-primary" size="is-medium">{{item2}}</b-tag>
+              </b-taglist>
+            </div>
+          </b-field>
         </div>
       </div>
     </div>
@@ -945,14 +952,10 @@ export default {
         },
       ],
       table: [],
-      prices: [
-      ],
-      newPrice: [
-      ],
-
-      history: [
-        
-      ],
+      prices: [],
+      newPrice: [],
+      history: [],
+      currentPrices: {},
     }
   },
   computed: {
@@ -1233,6 +1236,7 @@ export default {
 
       }
       this.table.push(last)
+      this.currentPrices = window.pool._getPrices();
       // console.log( this.table );
     },
     nextTick(){
