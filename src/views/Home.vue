@@ -451,10 +451,8 @@
                 </div>
               </div>
               <div class="column is-6">
-
                 <div class="columns">
-
-                  <div class="column is-8">
+                  <div class="column is-6">
                     <h2 class="is-size-6 mb-3">you pay</h2>
                     <b-input type="number" class="is-flex-grow-2 mb-3" v-model="tradeInfo.value" @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"></b-input>
                     <template v-if="poolAccounts[tradeInfo.account]">
@@ -474,8 +472,7 @@
                       </div>
                     </template>
                   </div>
-                  <div class="column is-4">
-
+                  <div class="column is-6">
                     <h2 class="is-size-6 mb-3">you get</h2>
                     <h2 class="is-size-6 mb-3" :style="{width: '100%', height: '40px'}">
                       <b-tooltip :label="tradeInfo.value2.toString()"
@@ -491,7 +488,14 @@
                           name="token2"
                           :native-value="item"
                           @click.native="setTradeResult(tradeInfo.account, tradeInfo.token, item,  tradeInfo.value)">
-                          {{item}}
+                          {{item}} 
+                          <span v-if="tradeInfo.token != '' && currentPrices[item] && currentPrices[item][tradeInfo.token]">
+                            <!-- {{ currentPrices[item][tradeInfo.token] }} -->
+                            <b-tooltip :label="currentPrices[item][tradeInfo.token].toString()"
+                              position="is-bottom">
+                              {{currentPrices[item][tradeInfo.token].toString().split('.')[0]}}{{currentPrices[item][tradeInfo.token].toString().split('.')[1]?'.'+currentPrices[item][tradeInfo.token].toString().split('.')[1].slice(0, 4):''}}
+                            </b-tooltip>
+                          </span>
                       </b-radio>
                     </div>
                   </div>
