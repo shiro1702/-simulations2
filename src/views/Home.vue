@@ -456,17 +456,17 @@
                     <h2 class="is-size-6 mb-3">you pay</h2>
                     <b-input type="number" class="is-flex-grow-2 mb-3" v-model="tradeInfo.value" @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"></b-input>
                     <template v-if="poolAccounts[tradeInfo.account]">
-                      <div v-for="(item, index) in poolAccounts[tradeInfo.account].balance"
+                      <div v-for="(item, index) in Object.keys(poolAccounts[tradeInfo.account].balance).filter(x=>pricesOptionsChecked.includes(x)).map(x=>{ return {name:x, value: poolAccounts[tradeInfo.account].balance[x]}})"
                           :key="index">
                         <b-radio 
                             v-model="tradeInfo.token"
                             name="token1"
-                            :native-value="index"
-                            @click.native="setTradeValue(tradeInfo.account, index), setTradeResult(tradeInfo.account, index, tradeInfo.token2, tradeInfo.value)">
-                            {{index}}
-                            <b-tooltip :label="item.toString()"
+                            :native-value="item.name"
+                            @click.native="setTradeValue(tradeInfo.account, item.name), setTradeResult(tradeInfo.account, item.name, tradeInfo.token2, tradeInfo.value)">
+                            {{item.name}}
+                            <b-tooltip :label="item.value.toString()"
                               position="is-bottom">
-                              {{item.toString().split('.')[0]}}{{item.toString().split('.')[1]?'.'+item.toString().split('.')[1].slice(0, 4):''}}
+                              {{item.value.toString().split('.')[0]}}{{item.value.toString().split('.')[1]?'.'+item.value.toString().split('.')[1].slice(0, 4):''}}
                             </b-tooltip>
                         </b-radio>
                       </div>
@@ -480,7 +480,6 @@
                         {{tradeInfo.value2.toString().split('.')[0]}}{{tradeInfo.value2.toString().split('.')[1]?'.'+tradeInfo.value2.toString().split('.')[1].slice(0, 4):''}}
                       </b-tooltip>
                     </h2>
-                    
                     <div v-for="(item, index) in pricesValue"
                         :key="index">
                       <b-radio 
@@ -498,6 +497,15 @@
                           </span>
                       </b-radio>
                     </div>
+                    <template v-if="tradeInfo.token != '' && currentPrices[tradeInfo.token2] && currentPrices[tradeInfo.token2][tradeInfo.token]">
+                      <h2 class="is-size-6 mt-3">Price Impact</h2>
+                      <h2>
+                        <b-tooltip :label="((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString() + '%'"
+                          position="is-bottom">
+                          {{ ((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString().split('.')[0]}}{{ ((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString().split('.')[1]?'.'+((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString().split('.')[1].slice(0, 2):'' }}%
+                        </b-tooltip>
+                      </h2>
+                    </template>
                   </div>
                 </div>
               </div>
