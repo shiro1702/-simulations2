@@ -435,23 +435,30 @@ class NeuronPool {
       outToken,
       direction
     );
+    const emptyOutput = { value: 0, name: outToken, rate: 0, impact: 0 };
     if (value <= 0) {
       console.log("Attempt to trade zero or negative value");
-      return { value: new D(0), name: outToken };
+      return emptyOutput;
     }
-    if (outAmount.isNaN()) {
-      // console.log("Deposit not enough");
-      return { value: new D(0), name: outToken };
-    }
-    const output = { value: outAmount, name: outToken };
+    const rate = new D(value).div(outAmount).toFixed(4);
+    const price = this.reserves.getPrice(outToken).div(this.reserves.getPrice(inToken));
+    const impact = new D(100).minus(
+      new D(price).times(100).div(rate)
+    );
+    const output = {
+      value: outAmount,
+      name: outToken,
+      rate,
+      impact,
+    };
     if (!dry) {
       if (this.reserves.get(outToken).value.lt(outAmount)) {
         console.log("Insufficient liquidity in the pool");
-        return { value: 0, name: outToken };
+        return emptyOutput;
       }
       if (this.accounts.subBalance(accountId, inToken, value) !== true) {
         console.log("Insifficient balance for trade");
-        return { value: 0, name: outToken };
+        return emptyOutput;
       }
 
       this.reserves.get(outToken).value = this.reserves

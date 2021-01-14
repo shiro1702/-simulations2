@@ -512,9 +512,9 @@
             <template v-if="tradeInfo.token != '' && currentPrices[tradeInfo.token2] && currentPrices[tradeInfo.token2][tradeInfo.token]">
               <h2 class="is-size-6 mt-3">Price Impact</h2>
               <h2>
-                <b-tooltip :label="((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString() + '%'"
-                  position="is-bottom">
-                  {{ ((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString().split('.')[0]}}{{ ((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString().split('.')[1]?'.'+((tradeInfo.value2*100) / (tradeInfo.value * currentPrices[tradeInfo.token2][tradeInfo.token])).toString().split('.')[1].slice(0, 2):'' }}%
+                <b-tooltip :label="tradeInfo.impact + '%'"
+                  position="is-right">
+                  {{ tradeInfo.impact.split('.')[0]}}{{ tradeInfo.impact.split('.')[1]?'.'+tradeInfo.impact.split('.')[1].slice(0, 2):'' }}%
                 </b-tooltip>
               </h2>
             </template>
@@ -862,6 +862,7 @@ export default {
         token: '',
         token2: '',
         maxMint: 0,
+        impact: 0,
       },
       repayModal: false,
       repayInfo: {
@@ -1771,7 +1772,10 @@ export default {
     },
     setTradeResult(account, token, token2, value ){
       const trade1 = window.pool.tradePool(account, [`${token}/${token2}`, parseFloat(value)], 1);
-      this.tradeInfo.value2 = trade1.value.toString()
+      this.tradeInfo.value2 = trade1.value.toString();
+
+      console.log('trade1', trade1);
+      this.tradeInfo.impact = trade1.impact.toString();
     },
     trade(tradeInfo){
       if ( (
@@ -1783,6 +1787,7 @@ export default {
           )
         ){
         const trade1 = window.pool.tradePool(tradeInfo.account, [`${tradeInfo.token}/${tradeInfo.token2}`, parseFloat(tradeInfo.value)]);
+
         this.updateResults();
         this.$buefy.toast.open(`вы получили ${trade1.name} ${trade1.value.toString()}`)
         this.history.push(`аккаунт №${tradeInfo.account + 1} обменял ${tradeInfo.token} / ${tradeInfo.token2} на сумму ${tradeInfo.value} (получил ${trade1.name} ${trade1.value.toString()})`);
