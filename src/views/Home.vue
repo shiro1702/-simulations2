@@ -250,7 +250,7 @@
               </div>
               <div class="column is-5">
                 <h2 class="is-size-6 mb-3">token</h2>
-                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="createDepositInfo.value" ></b-input>
+                <b-input type="number" step="any" class="is-flex-grow-2 mb-3" v-model="createDepositInfo.value" ></b-input>
                 <template v-if="poolAccounts[createDepositInfo.account]">
                   <div v-for="(item, index) in poolAccounts[createDepositInfo.account].balance"
                       :key="index">
@@ -300,7 +300,7 @@
               </div>
               <div class="column is-5">
                 <h2 class="is-size-6 mb-3">xToken</h2>
-                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="returnDepositInfo.value" ></b-input>
+                <b-input type="number" step="any" class="is-flex-grow-2 mb-3" v-model="returnDepositInfo.value" ></b-input>
                 <div v-for="(item, index) in returnDepositInfo.options"
                     :key="index">
                   <b-radio 
@@ -352,7 +352,7 @@
                     {{borrowInfo.maxBorrow.toString().split('.')[0]}}{{borrowInfo.maxBorrow.toString().split('.')[1]?'.'+borrowInfo.maxBorrow.toString().split('.')[1].slice(0, 4):''}}
                   </b-tooltip>)
                 </h2>
-                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="borrowInfo.value" ></b-input>
+                <b-input type="number" step="any" class="is-flex-grow-2 mb-3" v-model="borrowInfo.value" ></b-input>
 
                 <div v-for="(item, index) in pricesValue"
                     :key="index">
@@ -403,7 +403,7 @@
                     position="is-bottom">
                     {{mintInfo.maxMint.toString().split('.')[0]}}{{mintInfo.maxMint.toString().split('.')[1]?'.'+mintInfo.maxMint.toString().split('.')[1].slice(0, 4):''}}
                   </b-tooltip>)</h2>
-                <b-input type="number" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
+                <b-input type="number" step="any" class="is-flex-grow-2 mb-3" v-model="mintInfo.value" ></b-input>
 
                 <div v-for="(item, index) in stableChecked"
                     :key="index">
@@ -449,6 +449,7 @@
             <b-field label="from" class="w-100 field_bodered">
               <div class="is-flex is-justify-content-space-between">
                 <b-input type="number"
+                  step="any"
                   class="w-50"
                   v-model="tradeInfo.value" 
                   @input="(value)=>setTradeResult(tradeInfo.account, tradeInfo.token, tradeInfo.token2, value)"
@@ -484,6 +485,7 @@
             <b-field label="To" class="w-100 field_bodered">
               <div class="is-flex is-justify-content-space-between">
                 <b-input type="number"
+                  step="any"
                   class="w-50"
                   v-model="tradeInfo.value2"
                 />
