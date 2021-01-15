@@ -436,6 +436,10 @@ class NeuronPool {
       direction
     );
     const emptyOutput = { value: 0, name: outToken, rate: 0, impact: 0 };
+    if (outAmount.isNaN() || outAmount.equals(0)) {
+      console.log("Deposit not enough");
+      return emptyOutput;
+    }
     if (value <= 0) {
       console.log("Attempt to trade zero or negative value");
       return emptyOutput;
