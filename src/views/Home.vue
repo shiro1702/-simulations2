@@ -511,7 +511,7 @@
               :disabled="createTradeBtn"
               @click="trade(tradeInfo), tradeModal = false">Подтвердить</b-button>
 
-            <template v-if="tradeInfo.token != '' && currentPrices[tradeInfo.token2] && currentPrices[tradeInfo.token2][tradeInfo.token]">
+            <template v-if="tradeInfo.token != '' && tradeInfo.impact != NaN && tradeInfo.impact != Infinity && currentPrices[tradeInfo.token2] && currentPrices[tradeInfo.token2][tradeInfo.token]">
               <h2 class="is-size-6 mt-3">Price Impact</h2>
               <h2>
                 <b-tooltip :label="tradeInfo.impact + '%'"
