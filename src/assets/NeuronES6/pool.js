@@ -1039,6 +1039,7 @@ class NeuronPool {
       {}
     );
     const currentPrices = {};
+    const testValue = 1;
     for (const token1 of filteredTokens) {
       if (!currentPrices[token1]) {
         currentPrices[token1] = {};
@@ -1047,13 +1048,8 @@ class NeuronPool {
         if (token1 === token2) {
           continue;
         }
-        currentPrices[token1][token2] = this.tradePool(
-          1,
-          [token2 + "/" + token1, 1],
-          1
-        )
-          .value.div(1)
-          .toFixed(4);
+        const tradeValue = this.tradePool(testValue, [token1 + "/" + token2, 1], 1).value;
+        currentPrices[token1][token2] = 0 == tradeValue ? new D(0) : new D(testValue).div(tradeValue).toFixed(4);
       }
     }
     return currentPrices;
